@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
@@ -40,7 +41,7 @@ export function Navbar() {
         }`}
       >
         <div className="grid h-12 grid-cols-[1fr_auto] items-center sm:h-14 md:grid-cols-[1fr_auto_1fr]">
-          <a
+          <Link
             href="/"
             className="flex min-w-0 items-center gap-1 text-lg font-semibold tracking-tight text-white sm:gap-1.5 sm:text-xl md:text-2xl"
           >
@@ -52,24 +53,24 @@ export function Navbar() {
               className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10 md:h-12 md:w-12"
             />
             <span className="truncate">AppFrames</span>
-          </a>
+          </Link>
           <ul className="hidden items-center justify-center gap-5 md:col-start-2 md:flex lg:gap-8">
             {links.map((link) => (
               <li key={link.name}>
-                <a
+                <Link
                   href={link.href}
                   className={`transition-colors hover:text-white ${
                     scrolled ? "text-[1.03rem] text-zinc-100/95" : "text-sm text-zinc-200/95"
                   }`}
                 >
                   {link.name}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
           <div className="col-start-2 row-start-1 flex items-center justify-self-end gap-2 md:col-start-3">
             <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} className="hidden md:block">
-              <a
+              <Link
                 href="/create"
                 className={`inline-flex items-center justify-center rounded-xl px-4 py-2.5 font-semibold transition-all duration-300 ${
                   scrolled
@@ -78,7 +79,7 @@ export function Navbar() {
                 }`}
               >
                 Start Free
-              </a>
+              </Link>
             </motion.div>
             <button
               type="button"
@@ -103,23 +104,23 @@ export function Navbar() {
               <ul className="space-y-1 pb-3 text-center">
                 {links.map((link) => (
                   <li key={link.name}>
-                    <a
+                    <Link
                       href={link.href}
                       onClick={() => setMobileOpen(false)}
                       className="block rounded-lg px-2.5 py-2 text-sm text-zinc-200 hover:bg-white/5"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
-              <a
+              <Link
                 href="/create"
                 onClick={() => setMobileOpen(false)}
                 className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-200/70 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
               >
                 Start Free
-              </a>
+              </Link>
             </motion.div>
           ) : null}
         </AnimatePresence>

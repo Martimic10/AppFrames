@@ -165,7 +165,7 @@ export const CompositionFrame = memo(function CompositionFrame({
   const mood = getMoodStyles(stylePreset);
   const isCard = size === "card";
   const innerPad = isCard ? CARD_CONTENT_PADDING_PX : framePaddingPx(layoutSpacing);
-  const cardVariant = isCard ? getCardCompositionVariant(layoutId, plan, focusIndex) : null;
+  const cardVariant = isCard ? getCardCompositionVariant(layoutId, plan) : null;
   const cardHeadlinePx = cardHeadlineSizePx(textSize, cardVariant?.headlineScaleMul ?? 1);
   const cardSubheadlinePx = cardSubheadlineSizePx(textSize, cardVariant?.subheadlineScaleMul ?? 1);
   const fontFamily = getFontFamily(fontId);
@@ -213,7 +213,7 @@ export const CompositionFrame = memo(function CompositionFrame({
   const accentWashOpacity = cardAccentWashOpacity(hasScreenshot);
   const mockupScale = mockupSizeScale(mockupSize);
   const cardDeviceHeightRatio = cardVariant
-    ? getCardDeviceHeightRatio(cardVariant, hasScreenshot)
+    ? getCardDeviceHeightRatio(cardVariant)
     : 0.72;
   const cardDeviceMaxWidthRatio = cardVariant
     ? getCardDeviceMaxWidthRatio(cardVariant, hasScreenshot)

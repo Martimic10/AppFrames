@@ -164,7 +164,6 @@ export function CreateWorkspace() {
 
   const handleCategorySelect = useCallback(
     (id: CategoryId) => {
-      const next = getCategoryById(id);
       const firstTemplateId = getFirstFreeTemplateId(id);
       const theme = getTemplateThemeColors(id, firstTemplateId);
       setCategoryId(id);

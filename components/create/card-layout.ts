@@ -68,8 +68,7 @@ const CARD_VARIANT_BY_LAYOUT: Record<
 
 export function getCardCompositionVariant(
   layoutId: CompositionLayoutId,
-  plan: CompositionPlan,
-  focusIndex: number
+  plan: CompositionPlan
 ): CardCompositionVariant {
   const base = CARD_VARIANT_BY_LAYOUT[layoutId];
 
@@ -81,10 +80,7 @@ export function getCardCompositionVariant(
 }
 
 /** Default vertical anchor for the device (used when positioning mockups). */
-export function getCardDeviceHeightRatio(
-  variant: CardCompositionVariant,
-  _hasScreenshot: boolean
-): number {
+export function getCardDeviceHeightRatio(variant: CardCompositionVariant): number {
   return variant.deviceHeightRatio;
 }
 

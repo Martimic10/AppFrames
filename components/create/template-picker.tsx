@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { GatedTemplateCard } from "@/components/pro/gated-template-card";
 import { getTemplateThemeColors } from "@/components/create/template-theme-colors";
@@ -26,7 +26,7 @@ export function TemplatePicker({
   const [canScrollRight, setCanScrollRight] = useState(false);
   const useCarousel = category.templates.length > 3;
 
-  const updateScrollState = () => {
+  const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
     if (!el || !useCarousel) {
       setCanScrollLeft(false);
@@ -35,7 +35,7 @@ export function TemplatePicker({
     }
     setCanScrollLeft(el.scrollLeft > 4);
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  };
+  }, [useCarousel]);
 
   useEffect(() => {
     updateScrollState();
@@ -48,7 +48,7 @@ export function TemplatePicker({
       el.removeEventListener("scroll", updateScrollState);
       ro.disconnect();
     };
-  }, [category.id, category.templates.length, useCarousel]);
+  }, [category.id, category.templates.length, updateScrollState, useCarousel]);
 
   useEffect(() => {
     if (!useCarousel) return;

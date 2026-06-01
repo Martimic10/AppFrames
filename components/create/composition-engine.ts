@@ -102,16 +102,6 @@ export function buildCompositionPlan(
   const glowY = pick(seed, 2, 15, 45);
   const floatPhase = pick(seed, 3, 0, Math.PI * 2);
 
-  const baseTypography = (): TypographyPlacement => ({
-    variant: "hero-overlay",
-    x: 8,
-    y: 10,
-    maxWidth: 72,
-    align: "left",
-    headlineScale: 1,
-    subheadlineScale: 1
-  });
-
   switch (layoutId) {
     case "floating-stack": {
       const rotA = pick(seed, 10, -18, -6);

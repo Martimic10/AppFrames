@@ -39,7 +39,6 @@ export const IphoneMockup = memo(function IphoneMockup({
     <div className={wrapClass} style={wrapStyle}>
       <IphoneDeviceChrome
         imageDataUrl={imageDataUrl}
-        fill={fillHeight}
         className="h-full w-full"
       />
     </div>
