@@ -450,8 +450,10 @@ export function getCompositionFrameElement(slideIndex: number): HTMLElement | nu
     `[data-composition-card][data-slide-index="${slideIndex}"]`
   );
   if (!(card instanceof HTMLElement)) return null;
-  const frame = card.querySelector(".composition-frame");
-  return frame instanceof HTMLElement ? frame : null;
+  const frame = card.querySelector(
+    ".composition-frame, .template-kit-portrait-slide"
+  );
+  return frame instanceof HTMLElement ? frame : card;
 }
 
 export function scrollCompositionCardIntoView(slideIndex: number): void {

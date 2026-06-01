@@ -22,7 +22,7 @@ export type ThemePack = {
   statPool: string[];
 };
 
-const templateVariationByCategory: Record<CategoryId, Record<string, ThemeVariation>> = {
+export const templateVariationByCategory: Record<CategoryId, Record<string, ThemeVariation>> = {
   productivity: {
     minimal: "minimal",
     focus: "data-rich",

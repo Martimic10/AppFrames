@@ -1,3 +1,5 @@
+import { mockupSizeScale } from "@/components/create/template-settings";
+
 export type MockupPosition = {
   /** Horizontal anchor as % of frame width */
   x: number;
@@ -5,7 +7,22 @@ export type MockupPosition = {
   y: number;
   /** Clockwise rotation in degrees (center-anchored). */
   rotate?: number;
+  /** Per-slide size (30–200, 50 = 100%). Multiplied with global mockup size in the editor. */
+  scale?: number;
 };
+
+/** Same range as Style → Mockup size slider. */
+export const MOCKUP_SCALE_SLIDER = {
+  min: 30,
+  max: 200
+} as const;
+
+export function clampMockupScale(scale: number): number {
+  return Math.min(
+    MOCKUP_SCALE_SLIDER.max,
+    Math.max(MOCKUP_SCALE_SLIDER.min, Math.round(scale))
+  );
+}
 
 export const MOCKUP_ROTATE_LIMITS = {
   min: -90,
@@ -35,8 +52,12 @@ export function clampMockupPosition(position: MockupPosition): MockupPosition {
     position.rotate != null && Number.isFinite(position.rotate)
       ? clampMockupRotate(position.rotate)
       : undefined;
+  const scale =
+    position.scale != null && Number.isFinite(position.scale)
+      ? clampMockupScale(position.scale)
+      : undefined;
 
-  return {
+  const out: MockupPosition = {
     x: Math.min(
       MOCKUP_POSITION_LIMITS.maxX,
       Math.max(MOCKUP_POSITION_LIMITS.minX, position.x)
@@ -44,9 +65,28 @@ export function clampMockupPosition(position: MockupPosition): MockupPosition {
     y: Math.min(
       MOCKUP_POSITION_LIMITS.maxY,
       Math.max(MOCKUP_POSITION_LIMITS.minY, position.y)
-    ),
-    ...(rotate != null && rotate !== 0 ? { rotate } : {})
+    )
   };
+  if (rotate != null) {
+    out.rotate = rotate;
+  }
+  if (scale != null && scale !== 50) {
+    out.scale = scale;
+  }
+  return out;
+}
+
+/** Global Style slider × optional per-slide scale (50 = 100%). */
+export function effectiveMockupScaleMul(
+  globalMockupSize: number,
+  slideScale?: number | null
+): number {
+  const global = mockupSizeScale(globalMockupSize);
+  const local =
+    slideScale != null && Number.isFinite(slideScale)
+      ? clampMockupScale(slideScale) / 50
+      : 1;
+  return global * local;
 }
 
 function mockupScaleMul(mockupEl: HTMLElement): number {
@@ -92,7 +132,12 @@ export function clampMockupPositionInFrame(
   const maxY = frameH - halfH * minVisible;
 
   if (minX > maxX || minY > maxY) {
-    return clampMockupPosition({ x: 50, y: 50, rotate: rotateDeg });
+    return clampMockupPosition({
+      x: 50,
+      y: 50,
+      rotate: rotateDeg,
+      scale: position.scale
+    });
   }
 
   const clampedCenterX = Math.min(maxX, Math.max(minX, centerX));
@@ -101,7 +146,8 @@ export function clampMockupPositionInFrame(
   return clampMockupPosition({
     x: (clampedCenterX / frameW) * 100,
     y: (clampedCenterY / frameH) * 100,
-    rotate: rotateDeg
+    rotate: rotateDeg,
+    scale: position.scale
   });
 }
 
@@ -120,10 +166,42 @@ export function resolveMockupPosition(
     return clampMockupPosition({
       x: custom.x,
       y: custom.y,
-      rotate: custom.rotate
+      rotate: custom.rotate,
+      scale: custom.scale
     });
   }
   return layoutDefaultMockupPosition(deviceHeightRatio);
+}
+
+/** Default kit portrait phone anchor (centered, template tilt when unset). */
+export function kitPortraitDefaultMockupPosition(
+  deviceHeightRatio: number,
+  templatePhoneRotate = 0
+): MockupPosition {
+  return clampMockupPosition({
+    x: 50,
+    y: Math.round(40 + deviceHeightRatio * 28),
+    rotate: templatePhoneRotate
+  });
+}
+
+export function resolveKitPortraitMockupPosition(
+  custom: MockupPosition | null | undefined,
+  deviceHeightRatio: number,
+  templatePhoneRotate: number
+): MockupPosition {
+  if (custom) {
+    return clampMockupPosition({
+      x: custom.x,
+      y: custom.y,
+      rotate:
+        custom.rotate != null && Number.isFinite(custom.rotate)
+          ? custom.rotate
+          : templatePhoneRotate,
+      scale: custom.scale
+    });
+  }
+  return kitPortraitDefaultMockupPosition(deviceHeightRatio, templatePhoneRotate);
 }
 
 /** Center-anchored mockup transform (translate, rotate, optional scale). */
@@ -132,6 +210,14 @@ export function mockupPositionTransform(scale = 1, rotateDeg = 0): string {
   if (rotateDeg) parts.push(`rotate(${rotateDeg}deg)`);
   if (scale !== 1) parts.push(`scale(${scale})`);
   return parts.join(" ");
+}
+
+/** Rotation/scale on inner clip layer — host only handles translate. */
+export function mockupTiltTransform(scale = 1, rotateDeg = 0): string {
+  const parts: string[] = [];
+  if (rotateDeg) parts.push(`rotate(${rotateDeg}deg)`);
+  if (scale !== 1) parts.push(`scale(${scale})`);
+  return parts.length ? parts.join(" ") : "none";
 }
 
 export function sanitizeMockupPosition(

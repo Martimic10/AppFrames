@@ -1,24 +1,18 @@
 "use client";
 
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { CompositionFrame } from "@/components/create/composition-frame";
-import {
-  COMPOSITION_LAYOUT_LABELS,
-  type CompositionLayoutId
-} from "@/components/create/composition-engine";
+import type { CompositionLayoutId } from "@/components/create/composition-engine";
+import type { EditorKitSlideAppearance } from "@/components/create/editor-kit-slide-appearance";
+import { EditorKitSlideFrame } from "@/components/create/editor-kit-slide-frame";
 import { DEFAULT_TEXT_FONT_ID } from "@/components/create/text-fonts";
 import type { FrameStyleSettings } from "@/components/create/frame-style-settings";
-import {
-  DEFAULT_TEMPLATE_SETTINGS,
-  slideGapPx,
-  type TemplateSettings
-} from "@/components/create/template-settings";
+import { slideGapPx, type TemplateSettings } from "@/components/create/template-settings";
 import type { TextPosition } from "@/components/create/text-position";
 import type { MockupPosition } from "@/components/create/mockup-position";
 import type { GraphicPosition } from "@/components/create/graphic-position";
 import { DEFAULT_SLIDE_TEXT_STYLE } from "@/components/create/text-style";
-import { SCREENSHOT_COUNT } from "@/components/create/template-slides";
 import { gradientToCss } from "@/components/create/style-colors";
+import { SCREENSHOT_COUNT } from "@/components/create/template-slides";
 import type { BackgroundTextureId } from "@/components/create/background-textures";
 import type {
   CategoryConfig,
@@ -45,6 +39,8 @@ type CreateCanvasProps = {
   focused: boolean;
   dimmed: boolean;
   onSlideSelect: (index: number) => void;
+  onSlideHeadlineChange: (index: number, value: string) => void;
+  onSlideSubheadlineChange: (index: number, value: string) => void;
   onSlideTextPositionChange: (index: number, position: TextPosition) => void;
   onSlideTextSizeChange: (textSize: number) => void;
   onSlideMockupPositionChange: (index: number, position: MockupPosition) => void;
@@ -58,21 +54,15 @@ type CreateCanvasProps = {
 const SlideRow = memo(function SlideRow({
   displaySlides,
   selectedSlideIndex,
-  compositionLayoutId,
-  compositionSeed,
-  templateSettings,
-  frameStyleSettings,
   categoryId,
   selectedTemplateId,
-  useGradient,
-  gradientCss,
-  styleAccentColor,
-  background,
-  backgroundTextureId,
-  glowColor,
+  templateSettings,
+  appearance,
   onSlideSelect,
   onSlideTextPositionChange,
   onSlideTextSizeChange,
+  onSlideHeadlineChange,
+  onSlideSubheadlineChange,
   onSlideMockupPositionChange,
   onSlideGraphicPositionChange,
   onSlideGraphicRemove,
@@ -82,22 +72,16 @@ const SlideRow = memo(function SlideRow({
 }: {
   displaySlides: ScreenshotSlide[];
   selectedSlideIndex: number;
-  compositionLayoutId: CompositionLayoutId;
-  compositionSeed: string;
-  templateSettings: TemplateSettings;
-  frameStyleSettings: FrameStyleSettings;
   categoryId: CategoryId;
   selectedTemplateId: string;
-  useGradient: boolean;
-  gradientCss: string;
-  styleAccentColor: string;
-  background: string;
-  backgroundTextureId: BackgroundTextureId;
-  glowColor: string;
+  templateSettings: TemplateSettings;
+  appearance: EditorKitSlideAppearance;
   onSlideSelect: (index: number) => void;
+  onSlideHeadlineChange: (index: number, value: string) => void;
+  onSlideSubheadlineChange: (index: number, value: string) => void;
+  onSlideMockupPositionChange: (index: number, position: MockupPosition) => void;
   onSlideTextPositionChange: (index: number, position: TextPosition) => void;
   onSlideTextSizeChange: (textSize: number) => void;
-  onSlideMockupPositionChange: (index: number, position: MockupPosition) => void;
   onSlideGraphicPositionChange: (index: number, position: GraphicPosition) => void;
   onSlideGraphicRemove: (index: number) => void;
   onTextBoxPositionChange: (index: number, boxId: string, position: TextPosition) => void;
@@ -116,81 +100,35 @@ const SlideRow = memo(function SlideRow({
             className="shrink-0"
             style={{ transform: `translateY(${lift}px)` }}
           >
-            <CompositionFrame
-              slides={displaySlides}
-              focusIndex={item}
-              headline={slide.headline}
-              subheadline={slide.subheadline}
-              fontId={slide.fontId}
-              layoutId={compositionLayoutId}
-              compositionSeed={compositionSeed}
-              useGradient={useGradient}
-              gradientCss={gradientCss}
-              styleAccentColor={styleAccentColor}
-              background={background}
-              backgroundTextureId={backgroundTextureId}
-              glowColor={glowColor}
-              stylePreset={templateSettings.stylePreset}
-              layoutSpacing={templateSettings.layoutSpacing}
-              mockupSize={templateSettings.mockupSize ?? DEFAULT_TEMPLATE_SETTINGS.mockupSize}
-              fontWeight={slide.fontWeight ?? DEFAULT_SLIDE_TEXT_STYLE.fontWeight}
-              alignment={slide.alignment ?? DEFAULT_SLIDE_TEXT_STYLE.alignment}
-              textSize={slide.textSize ?? DEFAULT_SLIDE_TEXT_STYLE.textSize}
-              headlineColor={slide.headlineColor ?? DEFAULT_SLIDE_TEXT_STYLE.headlineColor}
-              subheadlineColor={
-                slide.subheadlineColor ?? DEFAULT_SLIDE_TEXT_STYLE.subheadlineColor
-              }
-              graphicDataUrl={slide.graphicDataUrl}
-              frameStyle={frameStyleSettings}
-              showDevices={templateSettings.showDeviceFrame}
-              showUploadedMockupAsIs={templateSettings.showUploadedMockupAsIs}
+            <EditorKitSlideFrame
               categoryId={categoryId}
               templateId={selectedTemplateId}
-              textPosition={slide.textPosition ?? null}
-              mockupPosition={slide.mockupPosition ?? null}
-              graphicPosition={slide.graphicPosition ?? null}
-              textBoxes={slide.textBoxes ?? []}
-              selected={selectedSlideIndex === item}
-              interactive
               slideIndex={item}
-              size="card"
+              slide={slide}
+              appearance={appearance}
+              templateSettings={templateSettings}
+              selected={selectedSlideIndex === item}
               onSelect={() => onSlideSelect(item)}
-              onTextPositionChange={
-                selectedSlideIndex === item
-                  ? (position) => onSlideTextPositionChange(item, position)
-                  : undefined
-              }
+              onHeadlineChange={(value) => onSlideHeadlineChange(item, value)}
+              onSubheadlineChange={(value) => onSlideSubheadlineChange(item, value)}
+              onTextPositionChange={(position) => onSlideTextPositionChange(item, position)}
               onTextSizeChange={
                 selectedSlideIndex === item ? onSlideTextSizeChange : undefined
               }
-              onMockupPositionChange={
-                selectedSlideIndex === item
-                  ? (position) => onSlideMockupPositionChange(item, position)
-                  : undefined
+              onMockupPositionChange={(position) => onSlideMockupPositionChange(item, position)}
+              onGraphicPositionChange={(position) =>
+                onSlideGraphicPositionChange(item, position)
               }
-              onGraphicPositionChange={
-                selectedSlideIndex === item
-                  ? (position) => onSlideGraphicPositionChange(item, position)
-                  : undefined
-              }
-              onGraphicRemove={
-                selectedSlideIndex === item ? () => onSlideGraphicRemove(item) : undefined
-              }
-              onTextBoxPositionChange={
-                selectedSlideIndex === item
-                  ? (boxId, position) => onTextBoxPositionChange(item, boxId, position)
-                  : undefined
+              onGraphicRemove={() => onSlideGraphicRemove(item)}
+              onTextBoxPositionChange={(boxId, position) =>
+                onTextBoxPositionChange(item, boxId, position)
               }
               onTextBoxTextSizeChange={
                 selectedSlideIndex === item
-                  ? (boxId, size) => onTextBoxTextSizeChange(item, boxId, size)
+                  ? (boxId, textSize) => onTextBoxTextSizeChange(item, boxId, textSize)
                   : undefined
               }
-              onTextBoxRemove={
-                selectedSlideIndex === item
-                  ? (boxId) => onTextBoxRemove(item, boxId)
-                  : undefined
-              }
+              onTextBoxRemove={(boxId) => onTextBoxRemove(item, boxId)}
             />
           </div>
         );
@@ -216,9 +154,11 @@ export function CreateCanvas({
   focused,
   dimmed,
   onSlideSelect,
+  onSlideHeadlineChange,
+  onSlideSubheadlineChange,
+  onSlideMockupPositionChange,
   onSlideTextPositionChange,
   onSlideTextSizeChange,
-  onSlideMockupPositionChange,
   onSlideGraphicPositionChange,
   onSlideGraphicRemove,
   onTextBoxPositionChange,
@@ -227,8 +167,18 @@ export function CreateCanvas({
 }: CreateCanvasProps) {
   const gradientCss = gradientToCss(gradientStyle);
   const styleAccentColor = useGradient ? gradientStyle.from : background;
-  const glowColor = category?.glowColor ?? "rgba(168, 85, 247, 0.25)";
   const gapPx = slideGapPx(templateSettings.layoutSpacing);
+  const slideAppearance: EditorKitSlideAppearance = {
+    useGradient,
+    gradientStyle,
+    background,
+    backgroundTextureId,
+    styleAccentColor,
+    stylePreset: templateSettings.stylePreset,
+    frameStyleSettings
+  };
+  const templateName =
+    category?.templates.find((t) => t.id === selectedTemplateId)?.name ?? "Template";
 
   const displaySlides = useMemo(
     () =>
@@ -373,13 +323,15 @@ export function CreateCanvas({
             <>
               <div className="pointer-events-none absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-950/90 px-3 py-1.5 text-[11px] text-zinc-400">
                 <Move className="h-3.5 w-3.5" />
-                Drag to pan · Scroll to zoom · Click slide to edit
+                Drag to pan · Scroll to zoom · Click text to edit · Drag mockup or text to move
               </div>
 
               <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
                 <div
                   ref={rowRef}
-                  className="flex w-max max-w-none shrink-0 items-end justify-start px-8 py-12 will-change-transform"
+                  className={`flex w-max max-w-none shrink-0 items-end justify-start px-8 py-12 ${
+                    isDragging ? "will-change-transform" : ""
+                  }`}
                   style={{
                     gap: gapPx,
                     transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
@@ -389,21 +341,15 @@ export function CreateCanvas({
                   <SlideRow
                     displaySlides={displaySlides}
                     selectedSlideIndex={selectedSlideIndex}
-                    compositionLayoutId={compositionLayoutId}
-                    compositionSeed={compositionSeed}
-                    templateSettings={templateSettings}
-                    frameStyleSettings={frameStyleSettings}
                     categoryId={categoryId}
                     selectedTemplateId={selectedTemplateId}
-                    useGradient={useGradient}
-                    gradientCss={gradientCss}
-                    styleAccentColor={styleAccentColor}
-                    background={background}
-                    backgroundTextureId={backgroundTextureId}
-                    glowColor={glowColor}
+                    templateSettings={templateSettings}
+                    appearance={slideAppearance}
                     onSlideSelect={onSlideSelect}
                     onSlideTextPositionChange={onSlideTextPositionChange}
                     onSlideTextSizeChange={onSlideTextSizeChange}
+                    onSlideHeadlineChange={onSlideHeadlineChange}
+                    onSlideSubheadlineChange={onSlideSubheadlineChange}
                     onSlideMockupPositionChange={onSlideMockupPositionChange}
                     onSlideGraphicPositionChange={onSlideGraphicPositionChange}
                     onSlideGraphicRemove={onSlideGraphicRemove}
@@ -423,8 +369,7 @@ export function CreateCanvas({
 
         {category ? (
           <p className="mt-3 shrink-0 text-center text-xs text-zinc-500">
-            {category.title} · {COMPOSITION_LAYOUT_LABELS[compositionLayoutId].name} · Slide{" "}
-            {selectedSlideIndex + 1} selected
+            {category.title} · {templateName} · Slide {selectedSlideIndex + 1} selected
           </p>
         ) : null}
       </div>

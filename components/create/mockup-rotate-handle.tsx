@@ -6,13 +6,16 @@ import {
   clampMockupPositionInFrame,
   type MockupPosition
 } from "@/components/create/mockup-position";
+import type { MockupHostPaintOptions } from "@/components/create/mockup-host-paint";
 
 type MockupRotateHandleProps = {
   frameRef: React.RefObject<HTMLElement | null>;
   hostRef: React.RefObject<HTMLElement | null>;
   position: MockupPosition;
   editable: boolean;
-  onPositionChange: (position: MockupPosition) => void;
+  onInteractionStart: () => void;
+  paintHost: (position: MockupPosition, options?: MockupHostPaintOptions) => void;
+  onCommitPosition: (position: MockupPosition) => void;
 };
 
 function angleFromCenter(centerX: number, centerY: number, clientX: number, clientY: number): number {
@@ -24,25 +27,27 @@ export function MockupRotateHandle({
   hostRef,
   position,
   editable,
-  onPositionChange
+  onInteractionStart,
+  paintHost,
+  onCommitPosition
 }: MockupRotateHandleProps) {
   const rotateState = useRef<{
     pointerId: number;
     startAngle: number;
     origin: MockupPosition;
+    latest: MockupPosition;
   } | null>(null);
 
-  const commitPosition = useCallback(
+  const applyLive = useCallback(
     (next: MockupPosition) => {
       const frame = frameRef.current;
       const host = hostRef.current;
-      if (frame && host) {
-        onPositionChange(clampMockupPositionInFrame(next, frame, host));
-        return;
-      }
-      onPositionChange(next);
+      const clamped =
+        frame && host ? clampMockupPositionInFrame(next, frame, host) : next;
+      paintHost(clamped, { kind: "rotate-preview" });
+      return clamped;
     },
-    [frameRef, hostRef, onPositionChange]
+    [frameRef, hostRef, paintHost]
   );
 
   const handlePointerDown = useCallback(
@@ -53,6 +58,7 @@ export function MockupRotateHandle({
       const host = hostRef.current;
       if (!host) return;
 
+      onInteractionStart();
       const rect = host.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
@@ -61,10 +67,11 @@ export function MockupRotateHandle({
       rotateState.current = {
         pointerId: event.pointerId,
         startAngle: angleFromCenter(centerX, centerY, event.clientX, event.clientY),
-        origin: position
+        origin: position,
+        latest: position
       };
     },
-    [editable, hostRef, position]
+    [editable, hostRef, onInteractionStart, position]
   );
 
   const handlePointerMove = useCallback(
@@ -80,31 +87,36 @@ export function MockupRotateHandle({
       const delta = currentAngle - rotate.startAngle;
       const originRotate = rotate.origin.rotate ?? 0;
 
-      commitPosition({
+      rotate.latest = applyLive({
         ...rotate.origin,
         rotate: originRotate + delta
       });
     },
-    [commitPosition, hostRef]
+    [applyLive, hostRef]
   );
 
-  const endRotate = useCallback((event: React.PointerEvent<HTMLSpanElement>) => {
-    const rotate = rotateState.current;
-    if (!rotate || rotate.pointerId !== event.pointerId) return;
-    rotateState.current = null;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  }, []);
+  const endRotate = useCallback(
+    (event: React.PointerEvent<HTMLSpanElement>) => {
+      const rotate = rotateState.current;
+      if (!rotate || rotate.pointerId !== event.pointerId) return;
+      rotateState.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      onCommitPosition(rotate.latest);
+    },
+    [onCommitPosition]
+  );
 
   if (!editable) return null;
 
   return (
     <span
       data-editor-only
+      data-mockup-rotate-handle
       role="button"
       aria-label="Drag to rotate mockup"
-      className="absolute -right-2 -top-2 z-10 flex h-5 w-5 touch-none cursor-grab items-center justify-center rounded-full border border-white/70 bg-emerald-500/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)] active:cursor-grabbing"
+      className="pointer-events-auto absolute -right-2 -top-2 z-30 flex h-5 w-5 touch-none cursor-grab items-center justify-center rounded-full border border-white/70 bg-emerald-500/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)] active:cursor-grabbing"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endRotate}

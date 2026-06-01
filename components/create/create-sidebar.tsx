@@ -34,11 +34,12 @@ import {
   APP_STORE_SCREENSHOT_LIMIT,
   MIN_SLIDE_COUNT
 } from "@/components/create/template-slides";
+import type { CompositionLayoutId } from "@/components/create/composition-engine";
 import {
-  COMPOSITION_LAYOUT_LABELS,
-  type CompositionLayoutId
-} from "@/components/create/composition-engine";
-import { clampMockupPosition } from "@/components/create/mockup-position";
+  clampMockupPosition,
+  resolveKitPortraitMockupPosition
+} from "@/components/create/mockup-position";
+import { getTemplatePickerKitVisual } from "@/components/create/template-kit-picker-variants";
 import {
   GRAPHIC_SIZE_SLIDER,
   graphicSizeScale,
@@ -46,9 +47,7 @@ import {
 } from "@/components/create/graphic-position";
 import type { FrameStyleSettings } from "@/components/create/frame-style-settings";
 import {
-  DEFAULT_TEMPLATE_SETTINGS,
-  MOCKUP_SIZE_SLIDER,
-  mockupSizeScale,
+  getMoodStyles,
   type TemplateSettings
 } from "@/components/create/template-settings";
 import type { SlideTextStyle } from "@/components/create/text-style";
@@ -67,7 +66,6 @@ import { TEXT_COLOR_PRESETS } from "@/components/create/text-style";
 import { TemplatePicker } from "@/components/create/template-picker";
 import { MAX_SLIDE_TEXT_BOXES, type SlideTextBox } from "@/components/create/slide-text-box";
 import { usePro } from "@/components/pro/pro-provider";
-import { isProCompositionLayout } from "@/lib/pro/constants";
 import type {
   CategoryConfig,
   GradientStyle,
@@ -205,8 +203,8 @@ export function CreateSidebar({
   onFrameStyleSettingsChange,
   onSlideSelect,
   onTemplateSelect,
-  compositionLayoutId,
-  onCompositionLayoutChange,
+  compositionLayoutId: _compositionLayoutId,
+  onCompositionLayoutChange: _onCompositionLayoutChange,
   templateSettings,
   onTemplateSettingsChange,
   onBackgroundSelect,
@@ -263,7 +261,6 @@ export function CreateSidebar({
   };
   const {
     layoutSpacing,
-    mockupSize = DEFAULT_TEMPLATE_SETTINGS.mockupSize,
     stylePreset,
     showDeviceFrame,
     showUploadedMockupAsIs
@@ -273,7 +270,23 @@ export function CreateSidebar({
   const selectedScreenshot = slides[selectedSlideIndex]?.imageDataUrl ?? null;
   const selectedTextBoxes = slides[selectedSlideIndex]?.textBoxes ?? [];
   const mockupRotatePresets = [-30, -15, 0, 15, 30, 90] as const;
-  const currentMockupRotate = textStyle.mockupPosition?.rotate ?? 0;
+  const categoryId = category?.id ?? "productivity";
+  const selectedTemplateIndex = Math.max(
+    0,
+    category?.templates.findIndex((t) => t.id === selectedTemplateId) ?? 0
+  );
+  const kitPhoneRotate = getTemplatePickerKitVisual(
+    categoryId,
+    selectedTemplateId,
+    selectedTemplateIndex
+  ).phoneRotate;
+  const resolvedMockupPosition = resolveKitPortraitMockupPosition(
+    textStyle.mockupPosition,
+    0.72,
+    kitPhoneRotate
+  );
+  const currentMockupRotate = resolvedMockupPosition.rotate ?? 0;
+  const showMockupControls = showDeviceFrame || Boolean(selectedScreenshot);
   const resolvedGraphicPosition = resolveGraphicPosition(
     textStyle.graphicPosition,
     Boolean(selectedScreenshot)
@@ -290,11 +303,16 @@ export function CreateSidebar({
   };
 
   const applyMockupRotate = (rotate: number) => {
-    const base = textStyle.mockupPosition ?? { x: 50, y: 62 };
+    const base = textStyle.mockupPosition ?? {
+      x: resolvedMockupPosition.x,
+      y: resolvedMockupPosition.y,
+      rotate: resolvedMockupPosition.rotate
+    };
     onSelectedSlideStyleChange({
       mockupPosition: clampMockupPosition({ ...base, rotate })
     });
   };
+
   const { shadowDepth, cornerRadius } = frameStyleSettings;
 
   const patchTemplateSettings = (patch: Partial<TemplateSettings>) => {
@@ -694,41 +712,6 @@ export function CreateSidebar({
                       )
                     }
                   />
-                  <label className="mt-4 block">
-                    <span className="mb-1 block text-[10px] text-zinc-500">Composition</span>
-                    <div className="relative">
-                      <select
-                        value={compositionLayoutId}
-                        onChange={(e) => {
-                          const next = e.target.value as CompositionLayoutId;
-                          if (!isPro && isProCompositionLayout(next)) {
-                            (onLockedFeatureClick ?? openUpgrade)(
-                              "Advanced composition layouts are included with AppFrames Pro."
-                            );
-                            return;
-                          }
-                          onCompositionLayoutChange(next);
-                        }}
-                        className="w-full cursor-pointer appearance-none rounded-lg border border-white/10 bg-zinc-900/80 px-3 py-2 pr-8 text-sm text-white outline-none transition focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/20"
-                      >
-                        {(
-                          Object.entries(COMPOSITION_LAYOUT_LABELS) as [
-                            CompositionLayoutId,
-                            { name: string; description: string }
-                          ][]
-                        ).map(([id, { name, description }]) => (
-                          <option key={id} value={id}>
-                            {name}
-                            {isProCompositionLayout(id) ? " (Pro)" : ""} — {description}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
-                        aria-hidden
-                      />
-                    </div>
-                  </label>
                   <div className="mt-4 space-y-3">
                     <div>
                       <div className="mb-1 flex items-center justify-between text-[10px] text-zinc-500">
@@ -747,36 +730,20 @@ export function CreateSidebar({
                       />
                     </div>
                     <div>
-                      <div className="mb-1 flex items-center justify-between text-[10px] text-zinc-500">
-                        <span>Mockup size</span>
-                        <span className="tabular-nums text-zinc-400">
-                          {Math.round(mockupSizeScale(mockupSize) * 100)}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={MOCKUP_SIZE_SLIDER.min}
-                        max={MOCKUP_SIZE_SLIDER.max}
-                        step={1}
-                        value={mockupSize}
-                        onChange={(e) =>
-                          patchTemplateSettings({ mockupSize: Number(e.target.value) })
-                        }
-                        className="w-full accent-purple-400"
-                      />
-                      <p className="mt-1 text-[10px] leading-relaxed text-zinc-600">
-                        50 = 100%. Scale up to 400% for hero crops. Drag mockups partially off
-                        edges for editorial layouts.
-                      </p>
-                    </div>
-                    <div>
                       <p className="mb-1 text-[10px] text-zinc-500">Preset mood</p>
                       <div className="grid grid-cols-3 gap-1.5">
                         {(["clean", "contrast", "editorial"] as const).map((preset) => (
                           <button
                             key={preset}
                             type="button"
-                            onClick={() => patchTemplateSettings({ stylePreset: preset })}
+                            onClick={() => {
+                              const mood = getMoodStyles(preset);
+                              patchTemplateSettings({ stylePreset: preset });
+                              onTextStyleChange({
+                                headlineColor: mood.headlineColor,
+                                subheadlineColor: mood.subheadlineColor
+                              });
+                            }}
                             className={`rounded-md border px-2 py-1 text-[10px] capitalize ${
                               stylePreset === preset
                                 ? "border-purple-400/40 bg-purple-500/15 text-purple-200"
@@ -1065,31 +1032,33 @@ export function CreateSidebar({
                       <div className="flex items-start gap-2">
                         <Move className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300/80" aria-hidden />
                         <p className="text-[10px] leading-relaxed text-zinc-500">
-                          Drag to move or use the green handle to rotate. Push mockups partially
-                          off the edges for cropped hero shots — the frame clips them cleanly.
-                          Size up to 400% in Style.
+                          Drag to move, use the top-right handle to rotate, and the bottom-right
+                          green handle to resize. Push mockups partially off the edges for cropped
+                          hero shots — the frame clips them cleanly.
                         </p>
                       </div>
-                      {selectedScreenshot ? (
-                        <div className="mt-3">
-                          <p className="mb-1.5 text-[10px] font-medium text-zinc-500">Rotation</p>
-                          <div className="flex flex-wrap gap-1">
-                            {mockupRotatePresets.map((preset) => (
-                              <button
-                                key={preset}
-                                type="button"
-                                onClick={() => applyMockupRotate(preset)}
-                                className={`rounded-md border px-2 py-1 text-[10px] tabular-nums transition ${
-                                  currentMockupRotate === preset
-                                    ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200"
-                                    : "border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200"
-                                }`}
-                              >
-                                {preset}°
-                              </button>
-                            ))}
+                      {showMockupControls ? (
+                        <>
+                          <div className="mt-3">
+                            <p className="mb-1.5 text-[10px] font-medium text-zinc-500">Rotation</p>
+                            <div className="flex flex-wrap gap-1">
+                              {mockupRotatePresets.map((preset) => (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => applyMockupRotate(preset)}
+                                  className={`rounded-md border px-2 py-1 text-[10px] tabular-nums transition ${
+                                    currentMockupRotate === preset
+                                      ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200"
+                                      : "border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200"
+                                  }`}
+                                >
+                                  {preset}°
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        </>
                       ) : null}
                       {textStyle.mockupPosition ? (
                         <button

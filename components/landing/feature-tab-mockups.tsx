@@ -1,10 +1,8 @@
 import Image from "next/image";
+import { AppStoreTemplateKit } from "@/components/landing/app-store-template-kit";
 
 const EDITOR_MOCKUP_WIDTH = 1483;
 const EDITOR_MOCKUP_HEIGHT = 1187;
-
-const TEMPLATES_MOCKUP_WIDTH = 771;
-const TEMPLATES_MOCKUP_HEIGHT = 613;
 
 const EXPORT_MOCKUP_WIDTH = 450;
 const EXPORT_MOCKUP_HEIGHT = 604;
@@ -62,19 +60,14 @@ function EditorMockup() {
 
 function TemplatesMockup() {
   return (
-    <div className="relative w-full max-w-full sm:max-w-lg lg:max-w-xl">
+    <div className="relative w-full max-w-full overflow-hidden">
       <div
         className="absolute -inset-4 rounded-3xl bg-emerald-400/12 blur-2xl sm:-inset-8 sm:blur-3xl"
         aria-hidden
       />
-      <Image
-        src="/Templates-mockup2.png"
-        alt="AppFrames category templates for productivity, finance, AI, and more"
-        width={TEMPLATES_MOCKUP_WIDTH}
-        height={TEMPLATES_MOCKUP_HEIGHT}
-        sizes="(max-width: 768px) 88vw, (max-width: 1280px) 38vw, 480px"
-        className="relative h-auto w-full rounded-2xl shadow-[0_24px_56px_rgba(0,0,0,0.5)] ring-1 ring-white/10"
-      />
+      <div className="relative max-h-[520px] overflow-y-auto overflow-x-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/50 p-3 sm:max-h-[560px] sm:p-4">
+        <AppStoreTemplateKit compact />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Move } from "lucide-react";
 import {
   clampTextPosition,
@@ -34,6 +34,8 @@ type DraggableSlideTextProps = {
   textSize: number;
   onPositionChange: (position: TextPosition) => void;
   onTextSizeChange?: (textSize: number) => void;
+  onHeadlineChange?: (value: string) => void;
+  onSubheadlineChange?: (value: string) => void;
 };
 
 export function DraggableSlideText({
@@ -55,8 +57,30 @@ export function DraggableSlideText({
   lineClamp = false,
   textSize,
   onPositionChange,
-  onTextSizeChange
+  onTextSizeChange,
+  onHeadlineChange,
+  onSubheadlineChange
 }: DraggableSlideTextProps) {
+  const inlineEdit = editable && Boolean(onHeadlineChange && onSubheadlineChange);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const subheadlineRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (!inlineEdit || !headlineRef.current) return;
+    if (document.activeElement === headlineRef.current) return;
+    if (headlineRef.current.textContent !== headline) {
+      headlineRef.current.textContent = headline;
+    }
+  }, [headline, inlineEdit]);
+
+  useEffect(() => {
+    if (!inlineEdit || !subheadlineRef.current) return;
+    if (document.activeElement === subheadlineRef.current) return;
+    if (subheadlineRef.current.textContent !== subheadline) {
+      subheadlineRef.current.textContent = subheadline;
+    }
+  }, [subheadline, inlineEdit]);
+
   const dragState = useRef<{
     pointerId: number;
     startX: number;
@@ -66,7 +90,7 @@ export function DraggableSlideText({
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (!editable) return;
+      if (!editable || inlineEdit) return;
       event.stopPropagation();
       event.preventDefault();
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -77,7 +101,23 @@ export function DraggableSlideText({
         origin: position
       };
     },
-    [editable, position]
+    [editable, inlineEdit, position]
+  );
+
+  const handleDragHandlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!editable || !inlineEdit) return;
+      event.stopPropagation();
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      dragState.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        origin: position
+      };
+    },
+    [editable, inlineEdit, position]
   );
 
   const handlePointerMove = useCallback(
@@ -113,9 +153,11 @@ export function DraggableSlideText({
 
   return (
     <div
-      className={`absolute z-[12] touch-none outline-none focus:outline-none focus-visible:outline-none ${
+      className={`absolute z-[12] outline-none focus:outline-none focus-visible:outline-none ${
         editable
-          ? "cursor-grab active:cursor-grabbing"
+          ? inlineEdit
+            ? "pointer-events-auto touch-none"
+            : "touch-none cursor-grab active:cursor-grabbing"
           : "pointer-events-none"
       }`}
       style={{
@@ -125,21 +167,29 @@ export function DraggableSlideText({
         textAlign: alignment,
         transform: textPositionTransform(alignment, rotateDeg)
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
+      onPointerDown={inlineEdit ? undefined : handlePointerDown}
+      onPointerMove={inlineEdit ? undefined : handlePointerMove}
+      onPointerUp={inlineEdit ? undefined : endDrag}
+      onPointerCancel={inlineEdit ? undefined : endDrag}
       role={editable ? "group" : undefined}
       aria-label={editable ? "Drag to reposition headline and subtitle" : undefined}
     >
       {editable ? (
-        <span
+        <div
           data-editor-only
-          className="pointer-events-none absolute -left-1 -top-5 inline-flex items-center gap-0.5 rounded bg-zinc-950/90 px-1 py-0.5 text-[8px] font-medium text-purple-200/90"
+          className={`absolute -left-1 inline-flex items-center gap-0.5 rounded bg-zinc-950/90 px-1 py-0.5 text-[8px] font-medium text-purple-200/90 ${
+            inlineEdit
+              ? "-top-6 cursor-grab active:cursor-grabbing"
+              : "pointer-events-none -top-5"
+          }`}
+          onPointerDown={inlineEdit ? handleDragHandlePointerDown : undefined}
+          onPointerMove={inlineEdit ? handlePointerMove : undefined}
+          onPointerUp={inlineEdit ? endDrag : undefined}
+          onPointerCancel={inlineEdit ? endDrag : undefined}
         >
           <Move className="h-2.5 w-2.5" aria-hidden />
           Drag
-        </span>
+        </div>
       ) : null}
       {onTextSizeChange ? (
         <TextResizeHandle
@@ -150,7 +200,12 @@ export function DraggableSlideText({
         />
       ) : null}
       <h2
-        className={`leading-[0.95] ${lineClamp ? "line-clamp-2" : ""}`}
+        ref={headlineRef}
+        contentEditable={inlineEdit}
+        suppressContentEditableWarning={inlineEdit}
+        className={`leading-[0.95] outline-none ${lineClamp && !inlineEdit ? "line-clamp-3" : ""} ${
+          inlineEdit ? "cursor-text rounded px-0.5 ring-0 focus:ring-1 focus:ring-purple-400/50" : ""
+        }`}
         style={{
           fontFamily,
           fontSize: headlinePx,
@@ -158,17 +213,26 @@ export function DraggableSlideText({
           color: headlineColor,
           letterSpacing: headlineTracking
         }}
+        onClick={(e) => inlineEdit && e.stopPropagation()}
+        onInput={(e) => onHeadlineChange?.(e.currentTarget.textContent ?? "")}
       >
         {headline}
       </h2>
       <p
-        className={`mt-0.5 leading-snug ${lineClamp ? "line-clamp-2" : ""}`}
+        ref={subheadlineRef}
+        contentEditable={inlineEdit}
+        suppressContentEditableWarning={inlineEdit}
+        className={`mt-0.5 leading-snug outline-none ${lineClamp && !inlineEdit ? "line-clamp-2" : ""} ${
+          inlineEdit ? "cursor-text rounded px-0.5 ring-0 focus:ring-1 focus:ring-purple-400/50" : ""
+        }`}
         style={{
           fontFamily,
           fontSize: subheadlinePx,
           color: subheadlineColor,
           fontWeight: 500
         }}
+        onClick={(e) => inlineEdit && e.stopPropagation()}
+        onInput={(e) => onSubheadlineChange?.(e.currentTarget.textContent ?? "")}
       >
         {subheadline}
       </p>

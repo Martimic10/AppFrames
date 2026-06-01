@@ -21,6 +21,22 @@ export function clampTextPosition(position: TextPosition): TextPosition {
   };
 }
 
+/** Default anchor for portrait kit slides (headline block at bottom). */
+export function kitPortraitDefaultTextPosition(alignment: TextAlignment): TextPosition {
+  return clampTextPosition({
+    x: alignment === "center" ? 50 : alignment === "right" ? 88 : 12,
+    y: 83
+  });
+}
+
+export function resolveKitPortraitTextPosition(
+  custom: TextPosition | null | undefined,
+  alignment: TextAlignment
+): TextPosition {
+  if (custom) return clampTextPosition(custom);
+  return kitPortraitDefaultTextPosition(alignment);
+}
+
 export function layoutDefaultTextPosition(
   alignment: TextAlignment,
   layoutX: number,

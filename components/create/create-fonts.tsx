@@ -1,4 +1,5 @@
 import {
+  Barlow_Condensed,
   Bebas_Neue,
   Cormorant,
   DM_Sans,
@@ -38,6 +39,12 @@ const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400", variable: "--font-bebas", display: "swap" });
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-barlow-condensed",
+  display: "swap"
+});
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
@@ -70,6 +77,7 @@ export const createFontClassName = [
   outfit.variable,
   fraunces.variable,
   bebas.variable,
+  barlowCondensed.variable,
   jetbrains.variable,
   montserrat.variable,
   sora.variable,

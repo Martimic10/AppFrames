@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useRef } from "react";
+import { memo, useRef, type CSSProperties } from "react";
 import { DraggableSlideGraphic } from "@/components/create/draggable-slide-graphic";
 import { DraggableSlideMockup } from "@/components/create/draggable-slide-mockup";
 import { DraggableSlideText } from "@/components/create/draggable-slide-text";
@@ -56,6 +56,9 @@ import {
   type BackgroundTextureId
 } from "@/components/create/background-textures";
 import { IphoneDeviceChrome } from "@/components/create/iphone-device-chrome";
+import { CardTemplatePlaceholderMockup } from "@/components/create/card-template-placeholder-mockup";
+import { getTemplatePickerKitVisual, kitCanvasTextColors } from "@/components/create/template-kit-picker-variants";
+import { TemplateKitFrameBackground } from "@/components/landing/app-store-template-kit";
 import { PremiumDevice } from "@/components/create/premium-device";
 import type { CategoryId, ScreenshotSlide, SlideTextBox, TextFontId } from "@/components/create/types";
 
@@ -104,6 +107,8 @@ type CompositionFrameProps = {
   onTextBoxRemove?: (boxId: string) => void;
   slideIndex?: number;
   className?: string;
+  /** Overrides default width class on the outer wrapper (e.g. picker previews). */
+  frameWidthClass?: string;
   size?: "hero" | "thumb" | "card";
 };
 
@@ -152,6 +157,7 @@ export const CompositionFrame = memo(function CompositionFrame({
   onTextBoxRemove,
   slideIndex,
   className = "",
+  frameWidthClass,
   size = "hero"
 }: CompositionFrameProps) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -175,12 +181,18 @@ export const CompositionFrame = memo(function CompositionFrame({
   const cornerRadius = frameStyle?.cornerRadius ?? 16;
   const focusScreenshot = getSlideImage(slides, focusIndex);
   const focusGraphic = graphicDataUrl ?? slides[focusIndex]?.graphicDataUrl ?? null;
-  const resolvedHeadlineColor = resolveHeadlineColor(headlineColor, mood.headlineColor);
-  const resolvedSubheadlineColor = resolveSubheadlineColor(
-    subheadlineColor,
-    mood.subheadlineColor
-  );
   const themePack = getThemePack(categoryId, templateId);
+  const kitVisual = isCard ? getTemplatePickerKitVisual(categoryId, templateId, focusIndex) : null;
+  const hasScreenshot = Boolean(focusScreenshot);
+  const useKitTemplateLook = isCard && !hasScreenshot && Boolean(kitVisual);
+  const kitTextColors = useKitTemplateLook && kitVisual ? kitCanvasTextColors(kitVisual) : null;
+
+  const resolvedHeadlineColor = useKitTemplateLook
+    ? (headlineColor ?? kitTextColors!.headline)
+    : resolveHeadlineColor(headlineColor, mood.headlineColor);
+  const resolvedSubheadlineColor = useKitTemplateLook
+    ? (subheadlineColor ?? kitTextColors!.subheadline)
+    : resolveSubheadlineColor(subheadlineColor, mood.subheadlineColor);
   const scaledHeadlinePx = Math.round(headlinePx * themePack.headlineScale);
   const scaledSubPx = Math.round(subPx * themePack.subheadlineScale);
   const accentColor = styleAccentColor ?? themePack.accent;
@@ -201,7 +213,6 @@ export const CompositionFrame = memo(function CompositionFrame({
       ? 42
       : typo.maxWidth;
   const textEditable = interactive && selected && Boolean(onTextPositionChange);
-  const hasScreenshot = Boolean(focusScreenshot);
   const themeOverlayImage = cardThemeOverlayImage(
     useGradient,
     gradientCss,
@@ -209,8 +220,10 @@ export const CompositionFrame = memo(function CompositionFrame({
     themePack.backgroundImage,
     hasScreenshot
   );
-  const themeOverlayOpacity = cardThemeOverlayOpacity(hasScreenshot, useGradient);
-  const accentWashOpacity = cardAccentWashOpacity(hasScreenshot);
+  const themeOverlayOpacity = useKitTemplateLook
+    ? 0
+    : cardThemeOverlayOpacity(hasScreenshot, useGradient);
+  const accentWashOpacity = useKitTemplateLook ? 0.06 : cardAccentWashOpacity(hasScreenshot);
   const mockupScale = mockupSizeScale(mockupSize);
   const cardDeviceHeightRatio = cardVariant
     ? getCardDeviceHeightRatio(cardVariant)
@@ -223,8 +236,8 @@ export const CompositionFrame = memo(function CompositionFrame({
     cardDeviceHeightRatio
   );
   const mockupWidthPercent = Math.min(
-    92,
-    Math.round(cardDeviceMaxWidthRatio * 100 * mockupScale)
+    94,
+    Math.round(cardDeviceMaxWidthRatio * 100 * mockupScale * (hasScreenshot ? 1 : 1.18))
   );
   const mockupEditable =
     interactive &&
@@ -244,14 +257,20 @@ export const CompositionFrame = memo(function CompositionFrame({
     aspectRatio: "9 / 19.5" as const,
     padding: innerPad,
     borderRadius: cornerRadius,
-    boxShadow: `${frameShadowCss(shadowDepth)}, inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(255,255,255,0.04)`,
-    backgroundColor: useGradient ? "transparent" : background,
-    backgroundImage: useGradient ? gradientCss : "none"
+    boxShadow: useKitTemplateLook
+      ? `${frameShadowCss(shadowDepth)}, inset 0 1px 0 rgba(255,255,255,0.12), 0 28px 56px -18px rgba(0,0,0,0.45)`
+      : `${frameShadowCss(shadowDepth)}, inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(255,255,255,0.04)`,
+    backgroundColor: useKitTemplateLook ? "#0a0a0c" : useGradient ? "transparent" : background,
+    backgroundImage: useKitTemplateLook ? "none" : useGradient ? gradientCss : "none"
   };
 
   const frameBorderClass = selected
-    ? "border-purple-400/45"
-    : "border-white/10";
+    ? useKitTemplateLook
+      ? "border-white/25"
+      : "border-purple-400/45"
+    : useKitTemplateLook
+      ? "border-white/12"
+      : "border-white/10";
 
   const backgroundTextureLayer =
     backgroundTextureId !== "none" ? (
@@ -279,6 +298,18 @@ export const CompositionFrame = memo(function CompositionFrame({
         flatScreenshot={flatScreenshotInCard}
         imageDataUrl={focusScreenshot}
         onPositionChange={onMockupPositionChange ?? (() => {})}
+      />
+    ) : null;
+
+  const slideTemplatePlaceholder =
+    isCard && !hasScreenshot && showDevices ? (
+      <CardTemplatePlaceholderMockup
+        categoryId={categoryId}
+        templateId={templateId}
+        position={resolvedMockupPosition}
+        widthPercent={mockupWidthPercent}
+        mockupSize={mockupSize}
+        screenshotUrl={focusScreenshot}
       />
     ) : null;
 
@@ -337,14 +368,23 @@ export const CompositionFrame = memo(function CompositionFrame({
     />
   ));
 
+  const cardFrameStyle: CSSProperties = {
+    ...frameShellStyle,
+    ...(selected && useKitTemplateLook
+      ? { boxShadow: `${frameShellStyle.boxShadow}, 0 0 0 2px color-mix(in srgb, ${accentColor} 55%, transparent)` }
+      : {})
+  };
+
   const cardFrame = (
     <div
       ref={frameRef}
       className={`composition-frame relative flex h-full flex-col overflow-hidden border ${frameBorderClass} ${className}`}
-      style={frameShellStyle}
+      style={cardFrameStyle}
     >
-      {backgroundTextureLayer}
-      {themeOverlayOpacity > 0 ? (
+      {backgroundTextureLayer && !useKitTemplateLook ? backgroundTextureLayer : null}
+      {useKitTemplateLook && kitVisual ? (
+        <TemplateKitFrameBackground categoryId={categoryId} visual={kitVisual} />
+      ) : themeOverlayOpacity > 0 ? (
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden"
           style={{
@@ -360,6 +400,7 @@ export const CompositionFrame = memo(function CompositionFrame({
         aria-hidden
       />
       {slideMockup}
+      {slideTemplatePlaceholder}
       {focusGraphic ? (
         <DraggableSlideGraphic
           frameRef={frameRef}
@@ -464,11 +505,12 @@ export const CompositionFrame = memo(function CompositionFrame({
   const frame = isCard ? cardFrame : cinematicFrame;
 
   const widthClass =
-    size === "card"
+    frameWidthClass ??
+    (size === "card"
       ? "w-[264px] xl:w-[300px]"
       : size === "thumb"
         ? "max-w-[120px]"
-        : "max-w-[320px] xl:max-w-[360px]";
+        : "max-w-[320px] xl:max-w-[360px]");
 
   if (interactive && onSelect) {
     return (

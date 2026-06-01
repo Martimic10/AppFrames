@@ -31,11 +31,11 @@ function AppStoreReady() {
           aria-hidden
         />
         <Image
-          src="/app-store-ready.png"
+          src="/showcase-mockup2.png"
           alt="App Store ready slide with headline and device mockup"
-          width={257}
-          height={531}
-          className="relative h-auto w-full object-contain"
+          width={414}
+          height={828}
+          className="relative block h-auto w-full object-cover object-top"
         />
       </div>
       <p className="mt-4 text-center text-sm font-medium text-emerald-300/90">

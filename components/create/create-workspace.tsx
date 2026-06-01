@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCategoryById } from "@/components/create/category-data";
-import { CategoryOnboarding } from "@/components/create/category-onboarding";
+import { CreateOnboarding } from "@/components/create/create-onboarding";
 import { CreateCanvas } from "@/components/create/create-canvas";
 import { CreateSidebar } from "@/components/create/create-sidebar";
 import {
@@ -38,8 +38,18 @@ import {
 } from "@/components/create/frame-style-settings";
 import {
   DEFAULT_TEMPLATE_SETTINGS,
+  type StylePreset,
   type TemplateSettings
 } from "@/components/create/template-settings";
+import {
+  templateVariationByCategory,
+  type ThemeVariation
+} from "@/components/create/category-theme-packs";
+import {
+  getTemplatePickerKitVisual,
+  kitCanvasBackgroundColor,
+  kitFontToTextFontId
+} from "@/components/create/template-kit-picker-variants";
 import {
   isImageFile,
   readFileAsDataUrl,
@@ -68,7 +78,6 @@ import {
 import { usePro } from "@/components/pro/pro-provider";
 import { isProCompositionLayout } from "@/lib/pro/constants";
 import { consumeExportCredit } from "@/lib/pro/export-storage";
-import { getFirstFreeTemplateId } from "@/lib/pro/template-access";
 import type {
   CategoryId,
   CompositionLayoutId,
@@ -76,6 +85,18 @@ import type {
   ScreenshotSlide,
   SlideTextStyle
 } from "@/components/create/types";
+
+function stylePresetForVariation(variation: ThemeVariation): StylePreset {
+  switch (variation) {
+    case "bold":
+    case "data-rich":
+      return "contrast";
+    case "cinematic":
+      return "editorial";
+    default:
+      return "clean";
+  }
+}
 
 export function CreateWorkspace() {
   const { isPro, canExport, openUpgrade, syncExportsRemaining, registerCheckoutPrepare } =
@@ -105,9 +126,10 @@ export function CreateWorkspace() {
     DEFAULT_FRAME_STYLE_SETTINGS
   );
   const [exportOpen, setExportOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(true);
 
   const category = categoryId ? getCategoryById(categoryId) : null;
-  const hasSelectedCategory = categoryId !== null;
+  const hasSelectedCategory = !onboardingOpen && categoryId !== null;
 
   const loadTemplate = useCallback((id: CategoryId, templateId: string) => {
     let nextSlideCount = 1;
@@ -119,13 +141,16 @@ export function CreateWorkspace() {
           ? templateSlides.length
           : Math.min(MAX_SLIDE_COUNT, Math.max(MIN_SLIDE_COUNT, prev.length));
 
+      const kitVisual = getTemplatePickerKitVisual(id, templateId, 0);
+      const kitFontId = kitFontToTextFontId(kitVisual.font);
+
       return Array.from({ length: nextSlideCount }, (_, index) => {
         const slide = templateSlides[index] ?? templateSlides[templateSlides.length - 1];
         const prevSlide = prev[index];
         return {
           ...slide,
           imageDataUrl: prevSlide?.imageDataUrl ?? null,
-          fontId: prevSlide?.fontId ?? slide.fontId,
+          fontId: prevSlide?.fontId ?? kitFontId,
           fontWeight: prevSlide?.fontWeight ?? slide.fontWeight,
           alignment: prevSlide?.alignment ?? slide.alignment,
           textSize: prevSlide?.textSize ?? slide.textSize,
@@ -154,6 +179,7 @@ export function CreateWorkspace() {
       setUseGradient(snapshot.useGradient);
       setStagedScreenshots([]);
       setActivePanel("templates");
+      setOnboardingOpen(false);
       loadTemplate(snapshot.categoryId, snapshot.selectedTemplateId);
       if (!next.backgrounds.includes(snapshot.background)) {
         setBackground(next.backgrounds[0] ?? snapshot.background);
@@ -162,21 +188,67 @@ export function CreateWorkspace() {
     [loadTemplate]
   );
 
-  const handleCategorySelect = useCallback(
-    (id: CategoryId) => {
-      const firstTemplateId = getFirstFreeTemplateId(id);
-      const theme = getTemplateThemeColors(id, firstTemplateId);
+  const applyCategoryTemplate = useCallback(
+    (id: CategoryId, templateId: string, options?: { select?: boolean }) => {
+      const shouldSelect = options?.select !== false;
+      const theme = getTemplateThemeColors(id, templateId);
+      const kitVisual = getTemplatePickerKitVisual(id, templateId, 0);
+      const variation =
+        templateVariationByCategory[id]?.[templateId] ?? "minimal";
+      const stylePreset = stylePresetForVariation(variation);
       setCategoryId(id);
-      setStagedScreenshots([]);
-      setActivePanel("upload");
-      setSelectedTemplateId(firstTemplateId);
-      setCompositionLayoutId(layoutIdFromTemplate(firstTemplateId));
-      setBackground(theme.background);
+      if (shouldSelect) {
+        setSelectedTemplateId(templateId);
+      }
+      setCompositionLayoutId(layoutIdFromTemplate(templateId));
+      setBackground(
+        kitVisual.useCategoryBackground
+          ? kitCanvasBackgroundColor(id, kitVisual)
+          : theme.background
+      );
       setGradientStyle(theme.gradient);
-      setUseGradient(true);
-      loadTemplate(id, firstTemplateId);
+      setUseGradient(kitVisual.theme === "gradient");
+      setTemplateSettings((prev) => ({
+        ...prev,
+        stylePreset,
+        mockupSize: prev.mockupSize < 42 ? 46 : prev.mockupSize
+      }));
+      loadTemplate(id, templateId);
     },
     [loadTemplate]
+  );
+
+  const handleCategoryPreview = useCallback(
+    (id: CategoryId, templateId: string) => {
+      applyCategoryTemplate(id, templateId);
+    },
+    [applyCategoryTemplate]
+  );
+
+  const handleTemplatePreview = useCallback(
+    (templateId: string) => {
+      if (!categoryId) return;
+      applyCategoryTemplate(categoryId, templateId, { select: false });
+    },
+    [applyCategoryTemplate, categoryId]
+  );
+
+  const handleOnboardingTemplateSelect = useCallback(
+    (templateId: string) => {
+      if (!categoryId) return;
+      applyCategoryTemplate(categoryId, templateId, { select: true });
+    },
+    [applyCategoryTemplate, categoryId]
+  );
+
+  const handleOnboardingComplete = useCallback(
+    (id: CategoryId, templateId: string) => {
+      setStagedScreenshots([]);
+      applyCategoryTemplate(id, templateId);
+      setOnboardingOpen(false);
+      setActivePanel("upload");
+    },
+    [applyCategoryTemplate]
   );
 
   useEffect(() => {
@@ -261,6 +333,18 @@ export function CreateWorkspace() {
     },
     []
   );
+
+  const handleSlideHeadlineChange = useCallback((index: number, value: string) => {
+    setSlides((prev) =>
+      prev.map((slide, i) => (i === index ? { ...slide, headline: value } : slide))
+    );
+  }, []);
+
+  const handleSlideSubheadlineChange = useCallback((index: number, value: string) => {
+    setSlides((prev) =>
+      prev.map((slide, i) => (i === index ? { ...slide, subheadline: value } : slide))
+    );
+  }, []);
 
   const handleSlideMockupPositionChange = useCallback(
     (index: number, position: MockupPosition) => {
@@ -720,6 +804,8 @@ export function CreateWorkspace() {
               focused={hasSelectedCategory}
               dimmed={!hasSelectedCategory}
               onSlideSelect={setSelectedSlideIndex}
+              onSlideHeadlineChange={handleSlideHeadlineChange}
+              onSlideSubheadlineChange={handleSlideSubheadlineChange}
               onSlideTextPositionChange={handleSlideTextPositionChange}
               onSlideTextSizeChange={handleSlideTextSizeChange}
               onSlideMockupPositionChange={handleSlideMockupPositionChange}
@@ -733,9 +819,16 @@ export function CreateWorkspace() {
         </div>
       </div>
 
-      {!hasSelectedCategory ? (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#09090b]/80 px-4 pt-16">
-          <CategoryOnboarding onSelect={handleCategorySelect} />
+      {onboardingOpen ? (
+        <div className="absolute inset-0 z-30 flex items-center justify-center overflow-y-auto bg-[#09090b]/85 px-4 py-20 backdrop-blur-sm">
+          <CreateOnboarding
+            slides={slides}
+            selectedTemplateId={selectedTemplateId}
+            onCategoryPreview={handleCategoryPreview}
+            onTemplatePreview={handleTemplatePreview}
+            onTemplateSelect={handleOnboardingTemplateSelect}
+            onComplete={handleOnboardingComplete}
+          />
         </div>
       ) : null}
     </div>
