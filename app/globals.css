@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #09090b;
+  color: #f8fafc;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica Neue,
+    Arial,
+    Noto Sans,
+    sans-serif;
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.04), transparent 40%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    34px 34px,
+    34px 34px;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.15;
+  z-index: -1;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.hero-shell {
+  position: relative;
+  background-color: #09090b;
+}
+
+.hero-mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 88% 8%,
+      rgba(74, 222, 128, 0.55) 0%,
+      rgba(45, 212, 191, 0.22) 32%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 72% 28%,
+      rgba(52, 211, 153, 0.28) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 95% 35%,
+      rgba(110, 231, 183, 0.18) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 120% 90% at 15% 110%,
+      rgba(9, 9, 11, 0.95) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 0% 50%,
+      rgba(9, 9, 11, 0.9) 0%,
+      transparent 65%
+    );
+}
+
+@media (max-width: 639px) {
+  .hero-mesh {
+    background:
+      radial-gradient(
+        ellipse 100% 60% at 50% 0%,
+        rgba(74, 222, 128, 0.35) 0%,
+        rgba(45, 212, 191, 0.12) 40%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 120% 90% at 15% 110%,
+        rgba(9, 9, 11, 0.95) 0%,
+        transparent 55%
+      );
+  }
+
+  .cta-banner-glow {
+    background:
+      radial-gradient(
+        ellipse 90% 80% at 50% 100%,
+        rgba(74, 222, 128, 0.35) 0%,
+        transparent 65%
+      );
+  }
+}
+
+.hero-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.hero-fade {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, #09090b);
+}
+
+.cta-banner-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 90% at 92% 50%,
+      rgba(74, 222, 128, 0.45) 0%,
+      rgba(45, 212, 191, 0.2) 35%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 50% 70% at 78% 60%,
+      rgba(52, 211, 153, 0.25) 0%,
+      transparent 55%
+    );
+}
+
+.composition-stage {
+  background-color: #0a0a0c;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(34, 197, 94, 0.08), transparent 50%),
+    linear-gradient(165deg, #0c0c0e 0%, #09090b 45%, #050506 100%);
+}
+
+.composition-stage::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  mix-blend-mode: overlay;
+  animation: composition-drift 24s linear infinite;
+}
+
+.composition-vignette {
+  background: radial-gradient(
+    ellipse 85% 75% at 50% 45%,
+    transparent 35%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+.composition-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  mix-blend-mode: soft-light;
+}
+
+.composition-atmosphere {
+  animation: composition-glow-shift 12s ease-in-out infinite alternate;
+}
+
+/* Editor: no focus ring / ghost box on draggable layers */
+.composition-frame [data-export-device-host],
+.composition-frame [data-export-device-host]:focus,
+.composition-frame [data-export-device-host]:focus-visible,
+.composition-frame [data-device-chassis],
+.composition-frame [data-device-chassis] * {
+  outline: none !important;
+}
+
+.composition-frame [data-export-device-host] {
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+@keyframes composition-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-12px, -8px);
+  }
+}
+
+@keyframes composition-glow-shift {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.cta-banner-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
