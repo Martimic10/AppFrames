@@ -9,7 +9,6 @@ import type { FrameStyleSettings } from "@/components/create/frame-style-setting
 import { slideGapPx, type TemplateSettings } from "@/components/create/template-settings";
 import type { TextPosition } from "@/components/create/text-position";
 import type { MockupPosition } from "@/components/create/mockup-position";
-import type { GraphicPosition } from "@/components/create/graphic-position";
 import { DEFAULT_SLIDE_TEXT_STYLE } from "@/components/create/text-style";
 import { gradientToCss } from "@/components/create/style-colors";
 import { SCREENSHOT_COUNT } from "@/components/create/template-slides";
@@ -44,8 +43,6 @@ type CreateCanvasProps = {
   onSlideTextPositionChange: (index: number, position: TextPosition) => void;
   onSlideTextSizeChange: (textSize: number) => void;
   onSlideMockupPositionChange: (index: number, position: MockupPosition) => void;
-  onSlideGraphicPositionChange: (index: number, position: GraphicPosition) => void;
-  onSlideGraphicRemove: (index: number) => void;
   onTextBoxPositionChange: (index: number, boxId: string, position: TextPosition) => void;
   onTextBoxTextSizeChange: (index: number, boxId: string, textSize: number) => void;
   onTextBoxRemove: (index: number, boxId: string) => void;
@@ -64,8 +61,6 @@ const SlideRow = memo(function SlideRow({
   onSlideHeadlineChange,
   onSlideSubheadlineChange,
   onSlideMockupPositionChange,
-  onSlideGraphicPositionChange,
-  onSlideGraphicRemove,
   onTextBoxPositionChange,
   onTextBoxTextSizeChange,
   onTextBoxRemove
@@ -82,8 +77,6 @@ const SlideRow = memo(function SlideRow({
   onSlideMockupPositionChange: (index: number, position: MockupPosition) => void;
   onSlideTextPositionChange: (index: number, position: TextPosition) => void;
   onSlideTextSizeChange: (textSize: number) => void;
-  onSlideGraphicPositionChange: (index: number, position: GraphicPosition) => void;
-  onSlideGraphicRemove: (index: number) => void;
   onTextBoxPositionChange: (index: number, boxId: string, position: TextPosition) => void;
   onTextBoxTextSizeChange: (index: number, boxId: string, textSize: number) => void;
   onTextBoxRemove: (index: number, boxId: string) => void;
@@ -116,10 +109,6 @@ const SlideRow = memo(function SlideRow({
                 selectedSlideIndex === item ? onSlideTextSizeChange : undefined
               }
               onMockupPositionChange={(position) => onSlideMockupPositionChange(item, position)}
-              onGraphicPositionChange={(position) =>
-                onSlideGraphicPositionChange(item, position)
-              }
-              onGraphicRemove={() => onSlideGraphicRemove(item)}
               onTextBoxPositionChange={(boxId, position) =>
                 onTextBoxPositionChange(item, boxId, position)
               }
@@ -159,8 +148,6 @@ export function CreateCanvas({
   onSlideMockupPositionChange,
   onSlideTextPositionChange,
   onSlideTextSizeChange,
-  onSlideGraphicPositionChange,
-  onSlideGraphicRemove,
   onTextBoxPositionChange,
   onTextBoxTextSizeChange,
   onTextBoxRemove
@@ -188,7 +175,6 @@ export function CreateCanvas({
             headline: "Your headline here",
             subheadline: "Your subtitle appears here",
             imageDataUrl: null,
-            graphicDataUrl: null,
             textBoxes: [],
             fontId: DEFAULT_TEXT_FONT_ID,
             ...DEFAULT_SLIDE_TEXT_STYLE
@@ -351,8 +337,6 @@ export function CreateCanvas({
                     onSlideHeadlineChange={onSlideHeadlineChange}
                     onSlideSubheadlineChange={onSlideSubheadlineChange}
                     onSlideMockupPositionChange={onSlideMockupPositionChange}
-                    onSlideGraphicPositionChange={onSlideGraphicPositionChange}
-                    onSlideGraphicRemove={onSlideGraphicRemove}
                     onTextBoxPositionChange={onTextBoxPositionChange}
                     onTextBoxTextSizeChange={onTextBoxTextSizeChange}
                     onTextBoxRemove={onTextBoxRemove}

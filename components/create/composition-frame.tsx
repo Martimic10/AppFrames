@@ -1,16 +1,9 @@
 "use client";
 
 import { memo, useRef, type CSSProperties } from "react";
-import { DraggableSlideGraphic } from "@/components/create/draggable-slide-graphic";
 import { DraggableSlideMockup } from "@/components/create/draggable-slide-mockup";
 import { DraggableSlideText } from "@/components/create/draggable-slide-text";
 import { DraggableTextBox } from "@/components/create/draggable-text-box";
-import {
-  graphicMaxHeightPercent,
-  graphicMaxWidthPercent,
-  resolveGraphicPosition,
-  type GraphicPosition
-} from "@/components/create/graphic-position";
 import { resolveMockupPosition } from "@/components/create/mockup-position";
 import type { MockupPosition } from "@/components/create/mockup-position";
 import { resolveTextPosition } from "@/components/create/text-position";
@@ -84,7 +77,6 @@ type CompositionFrameProps = {
   textSize?: number;
   headlineColor?: string | null;
   subheadlineColor?: string | null;
-  graphicDataUrl?: string | null;
   frameStyle?: Pick<FrameStyleSettings, "shadowDepth" | "cornerRadius">;
   showDevices?: boolean;
   showUploadedMockupAsIs?: boolean;
@@ -92,15 +84,12 @@ type CompositionFrameProps = {
   templateId?: string;
   textPosition?: TextPosition | null;
   mockupPosition?: MockupPosition | null;
-  graphicPosition?: GraphicPosition | null;
   selected?: boolean;
   interactive?: boolean;
   onSelect?: () => void;
   onTextPositionChange?: (position: TextPosition) => void;
   onTextSizeChange?: (textSize: number) => void;
   onMockupPositionChange?: (position: MockupPosition) => void;
-  onGraphicPositionChange?: (position: GraphicPosition) => void;
-  onGraphicRemove?: () => void;
   textBoxes?: SlideTextBox[];
   onTextBoxPositionChange?: (boxId: string, position: TextPosition) => void;
   onTextBoxTextSizeChange?: (boxId: string, textSize: number) => void;
@@ -134,7 +123,6 @@ export const CompositionFrame = memo(function CompositionFrame({
   textSize = 54,
   headlineColor = null,
   subheadlineColor = null,
-  graphicDataUrl = null,
   frameStyle,
   showDevices = true,
   showUploadedMockupAsIs = true,
@@ -142,15 +130,12 @@ export const CompositionFrame = memo(function CompositionFrame({
   templateId = "minimal",
   textPosition = null,
   mockupPosition = null,
-  graphicPosition = null,
   selected = false,
   interactive = false,
   onSelect,
   onTextPositionChange,
   onTextSizeChange,
   onMockupPositionChange,
-  onGraphicPositionChange,
-  onGraphicRemove,
   textBoxes = [],
   onTextBoxPositionChange,
   onTextBoxTextSizeChange,
@@ -180,7 +165,6 @@ export const CompositionFrame = memo(function CompositionFrame({
   const shadowDepth = frameStyle?.shadowDepth ?? 45;
   const cornerRadius = frameStyle?.cornerRadius ?? 16;
   const focusScreenshot = getSlideImage(slides, focusIndex);
-  const focusGraphic = graphicDataUrl ?? slides[focusIndex]?.graphicDataUrl ?? null;
   const themePack = getThemePack(categoryId, templateId);
   const kitVisual = isCard ? getTemplatePickerKitVisual(categoryId, templateId, focusIndex) : null;
   const hasScreenshot = Boolean(focusScreenshot);
@@ -245,11 +229,6 @@ export const CompositionFrame = memo(function CompositionFrame({
     Boolean(onMockupPositionChange) &&
     hasScreenshot &&
     (showDevices || flatScreenshotInCard);
-  const resolvedGraphicPosition = resolveGraphicPosition(graphicPosition, hasScreenshot);
-  const graphicWidthPercent = graphicMaxWidthPercent(hasScreenshot);
-  const graphicHeightPercent = graphicMaxHeightPercent(hasScreenshot);
-  const graphicEditable =
-    interactive && selected && Boolean(onGraphicPositionChange) && Boolean(focusGraphic);
   const textBoxEditable =
     interactive && selected && Boolean(onTextBoxPositionChange);
   const backgroundTexture = getBackgroundTexture(backgroundTextureId);
@@ -401,18 +380,6 @@ export const CompositionFrame = memo(function CompositionFrame({
       />
       {slideMockup}
       {slideTemplatePlaceholder}
-      {focusGraphic ? (
-        <DraggableSlideGraphic
-          frameRef={frameRef}
-          position={resolvedGraphicPosition}
-          maxWidthPercent={graphicWidthPercent}
-          maxHeightPercent={graphicHeightPercent}
-          imageDataUrl={focusGraphic}
-          editable={graphicEditable}
-          onPositionChange={onGraphicPositionChange ?? (() => {})}
-          onRemove={graphicEditable ? onGraphicRemove : undefined}
-        />
-      ) : null}
       {slideText}
       {extraTextBoxes}
     </div>
@@ -471,29 +438,6 @@ export const CompositionFrame = memo(function CompositionFrame({
             imageDataUrl={focusScreenshot}
             className="max-h-full max-w-full"
             imageClassName="block h-auto max-h-full w-auto max-w-full select-none"
-          />
-        </div>
-      ) : focusGraphic ? (
-        <div className="pointer-events-none absolute inset-0 z-[4] flex items-center justify-center p-8">
-          <img
-            src={focusGraphic}
-            alt=""
-            draggable={false}
-            className="max-h-[70%] max-w-[75%] object-contain drop-shadow-2xl"
-          />
-        </div>
-      ) : null}
-
-      {focusGraphic && focusScreenshot && (showDevices || showUploadedMockupAsIs) ? (
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[28%] z-[6] flex justify-center px-6"
-          aria-hidden
-        >
-          <img
-            src={focusGraphic}
-            alt=""
-            draggable={false}
-            className="max-h-[36%] max-w-[50%] object-contain drop-shadow-[0_16px_32px_rgba(0,0,0,0.55)]"
           />
         </div>
       ) : null}

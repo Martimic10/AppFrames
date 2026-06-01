@@ -19,7 +19,7 @@ export function TemplatePickerScreenshotPreview({
   const previewSlide = slides[0];
 
   return (
-    <div className="template-kit template-kit--picker-portrait flex w-full justify-center">
+    <div className="category-template-picker-preview template-kit template-kit--picker-portrait flex w-full justify-center">
       <TemplateKitPortraitSlide
         categoryId={categoryId}
         templateId={templateId}

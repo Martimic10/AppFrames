@@ -58,7 +58,6 @@ import {
   type StagedScreenshot
 } from "@/components/create/image-upload";
 import type { TextPosition } from "@/components/create/text-position";
-import { clampGraphicPosition, type GraphicPosition } from "@/components/create/graphic-position";
 import {
   sanitizeMockupPosition,
   type MockupPosition
@@ -71,9 +70,8 @@ import {
 } from "@/components/create/slide-text-box";
 import { clampSlideTextSize } from "@/components/create/text-size-resize";
 import {
-  clearEditorCheckoutSnapshot,
-  readEditorCheckoutSnapshot,
-  saveEditorCheckoutSnapshot
+  saveEditorCheckoutSnapshot,
+  takeBootCheckoutSnapshot
 } from "@/lib/pro/editor-checkout-session";
 import { usePro } from "@/components/pro/pro-provider";
 import { isProCompositionLayout } from "@/lib/pro/constants";
@@ -101,14 +99,17 @@ function stylePresetForVariation(variation: ThemeVariation): StylePreset {
 export function CreateWorkspace() {
   const { isPro, canExport, openUpgrade, syncExportsRemaining, registerCheckoutPrepare } =
     usePro();
+  const [editorHydrated, setEditorHydrated] = useState(false);
   const [categoryId, setCategoryId] = useState<CategoryId | null>(null);
-  const [activePanel, setActivePanel] = useState<"upload" | "templates" | "text" | "style">(
-    "upload"
-  );
+  const [activePanel, setActivePanel] = useState<
+    "upload" | "templates" | "text" | "style"
+  >("upload");
   const [slides, setSlides] = useState<ScreenshotSlide[]>([]);
   const [stagedScreenshots, setStagedScreenshots] = useState<StagedScreenshot[]>([]);
   const slidesRef = useRef(slides);
   slidesRef.current = slides;
+  const stagedScreenshotsRef = useRef(stagedScreenshots);
+  stagedScreenshotsRef.current = stagedScreenshots;
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [background, setBackground] = useState("#09090b");
@@ -158,8 +159,6 @@ export function CreateWorkspace() {
           subheadlineColor: prevSlide?.subheadlineColor ?? slide.subheadlineColor,
           textPosition: prevSlide?.textPosition ?? slide.textPosition ?? null,
           mockupPosition: prevSlide?.mockupPosition ?? slide.mockupPosition ?? null,
-          graphicPosition: prevSlide?.graphicPosition ?? slide.graphicPosition ?? null,
-          graphicDataUrl: prevSlide?.graphicDataUrl ?? null,
           textBoxes: prevSlide?.textBoxes ?? []
         };
       });
@@ -167,26 +166,6 @@ export function CreateWorkspace() {
 
     setSelectedSlideIndex((sel) => Math.min(sel, Math.max(0, nextSlideCount - 1)));
   }, []);
-
-  const restoreEditorSnapshot = useCallback(
-    (snapshot: NonNullable<ReturnType<typeof readEditorCheckoutSnapshot>>) => {
-      const next = getCategoryById(snapshot.categoryId);
-      setCategoryId(snapshot.categoryId);
-      setSelectedTemplateId(snapshot.selectedTemplateId);
-      setCompositionLayoutId(snapshot.compositionLayoutId);
-      setBackground(snapshot.background);
-      setGradientStyle(snapshot.gradientStyle);
-      setUseGradient(snapshot.useGradient);
-      setStagedScreenshots([]);
-      setActivePanel("templates");
-      setOnboardingOpen(false);
-      loadTemplate(snapshot.categoryId, snapshot.selectedTemplateId);
-      if (!next.backgrounds.includes(snapshot.background)) {
-        setBackground(next.backgrounds[0] ?? snapshot.background);
-      }
-    },
-    [loadTemplate]
-  );
 
   const applyCategoryTemplate = useCallback(
     (id: CategoryId, templateId: string, options?: { select?: boolean }) => {
@@ -251,24 +230,62 @@ export function CreateWorkspace() {
     [applyCategoryTemplate]
   );
 
+  const applyCheckoutSnapshot = useCallback(
+    (snapshot: NonNullable<ReturnType<typeof takeBootCheckoutSnapshot>>) => {
+      const cat = getCategoryById(snapshot.categoryId);
+      setCategoryId(snapshot.categoryId);
+      setSelectedTemplateId(snapshot.selectedTemplateId);
+      setCompositionLayoutId(snapshot.compositionLayoutId);
+      setBackground(
+        cat.backgrounds.includes(snapshot.background)
+          ? snapshot.background
+          : cat.backgrounds[0] ?? snapshot.background
+      );
+      setGradientStyle(snapshot.gradientStyle);
+      setUseGradient(snapshot.useGradient);
+      setBackgroundTextureId(snapshot.backgroundTextureId);
+      setTemplateSettings(snapshot.templateSettings);
+      setFrameStyleSettings(snapshot.frameStyleSettings);
+      setSelectedSlideIndex(snapshot.selectedSlideIndex);
+      setActivePanel(snapshot.activePanel);
+      setStagedScreenshots(snapshot.stagedScreenshots);
+      setOnboardingOpen(false);
+
+      if (snapshot.slides.length > 0) {
+        setSlides(snapshot.slides);
+      } else {
+        loadTemplate(snapshot.categoryId, snapshot.selectedTemplateId);
+      }
+    },
+    [loadTemplate]
+  );
+
   useEffect(() => {
-    const snapshot = readEditorCheckoutSnapshot();
+    const snapshot = takeBootCheckoutSnapshot();
     if (snapshot) {
-      restoreEditorSnapshot(snapshot);
-      clearEditorCheckoutSnapshot();
+      applyCheckoutSnapshot(snapshot);
     }
-  }, [restoreEditorSnapshot]);
+    setEditorHydrated(true);
+  }, [applyCheckoutSnapshot]);
 
   useEffect(() => {
     registerCheckoutPrepare(() => {
       if (!categoryId || !selectedTemplateId) return;
       saveEditorCheckoutSnapshot({
+        version: 2,
         categoryId,
         selectedTemplateId,
         compositionLayoutId,
         background,
         useGradient,
-        gradientStyle
+        gradientStyle,
+        backgroundTextureId,
+        templateSettings,
+        frameStyleSettings,
+        slides: slidesRef.current,
+        selectedSlideIndex,
+        stagedScreenshots: stagedScreenshotsRef.current,
+        activePanel
       });
     });
     return () => registerCheckoutPrepare(null);
@@ -279,7 +296,12 @@ export function CreateWorkspace() {
     compositionLayoutId,
     background,
     useGradient,
-    gradientStyle
+    gradientStyle,
+    backgroundTextureId,
+    templateSettings,
+    frameStyleSettings,
+    selectedSlideIndex,
+    activePanel
   ]);
 
   const handleTemplateSelect = useCallback(
@@ -353,16 +375,6 @@ export function CreateWorkspace() {
         prev.map((slide, i) =>
           i === index ? { ...slide, mockupPosition: sanitized } : slide
         )
-      );
-    },
-    []
-  );
-
-  const handleSlideGraphicPositionChange = useCallback(
-    (index: number, position: GraphicPosition) => {
-      const sanitized = clampGraphicPosition(position);
-      setSlides((prev) =>
-        prev.map((slide, i) => (i === index ? { ...slide, graphicPosition: sanitized } : slide))
       );
     },
     []
@@ -444,8 +456,7 @@ export function CreateWorkspace() {
     subheadlineColor:
       selectedSlide?.subheadlineColor ?? DEFAULT_SLIDE_TEXT_STYLE.subheadlineColor,
     textPosition: selectedSlide?.textPosition ?? DEFAULT_SLIDE_TEXT_STYLE.textPosition,
-    mockupPosition: selectedSlide?.mockupPosition ?? DEFAULT_SLIDE_TEXT_STYLE.mockupPosition,
-    graphicPosition: selectedSlide?.graphicPosition ?? DEFAULT_SLIDE_TEXT_STYLE.graphicPosition
+    mockupPosition: selectedSlide?.mockupPosition ?? DEFAULT_SLIDE_TEXT_STYLE.mockupPosition
   };
 
   const handleStageScreenshots = useCallback(async (files: File[]): Promise<AutoFillResult> => {
@@ -610,24 +621,6 @@ export function CreateWorkspace() {
     []
   );
 
-  const handleSetSlideGraphic = useCallback(async (index: number, file: File) => {
-    if (!isImageFile(file)) return;
-    const dataUrl = await readFileAsDataUrl(file);
-    setSlides((prev) =>
-      prev.map((slide, i) =>
-        i === index ? { ...slide, graphicDataUrl: dataUrl, graphicPosition: null } : slide
-      )
-    );
-  }, []);
-
-  const handleRemoveSlideGraphic = useCallback((index: number) => {
-    setSlides((prev) =>
-      prev.map((slide, i) =>
-        i === index ? { ...slide, graphicDataUrl: null, graphicPosition: null } : slide
-      )
-    );
-  }, []);
-
   const defaultExportFileName = useMemo(() => {
     const categoryPart = category?.title ?? categoryId ?? "app";
     const templatePart = selectedTemplateId || "screenshots";
@@ -724,7 +717,7 @@ export function CreateWorkspace() {
         <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 shadow-2xl shadow-black/30">
           <CreateTopBar
             onOpenExport={handleOpenExport}
-            exportDisabled={!hasSelectedCategory}
+            exportDisabled={!editorHydrated || !hasSelectedCategory}
           />
           <ExportDialog
             open={exportOpen}
@@ -755,8 +748,6 @@ export function CreateWorkspace() {
               onRemoveStagedScreenshot={handleRemoveStagedScreenshot}
               onClearStagedScreenshots={handleClearStagedScreenshots}
               onReplaceScreenshot={handleReplaceScreenshot}
-              onSetSlideGraphic={handleSetSlideGraphic}
-              onRemoveSlideGraphic={handleRemoveSlideGraphic}
               onRemoveScreenshot={handleRemoveScreenshot}
               onRemoveSlide={handleRemoveSlide}
               onAddSlide={handleAddSlide}
@@ -809,8 +800,6 @@ export function CreateWorkspace() {
               onSlideTextPositionChange={handleSlideTextPositionChange}
               onSlideTextSizeChange={handleSlideTextSizeChange}
               onSlideMockupPositionChange={handleSlideMockupPositionChange}
-              onSlideGraphicPositionChange={handleSlideGraphicPositionChange}
-              onSlideGraphicRemove={handleRemoveSlideGraphic}
               onTextBoxPositionChange={handleTextBoxPositionChange}
               onTextBoxTextSizeChange={handleTextBoxTextSizeChange}
               onTextBoxRemove={handleRemoveTextBox}
@@ -819,8 +808,8 @@ export function CreateWorkspace() {
         </div>
       </div>
 
-      {onboardingOpen ? (
-        <div className="absolute inset-0 z-30 flex items-center justify-center overflow-y-auto bg-[#09090b]/85 px-4 py-20 backdrop-blur-sm">
+      {editorHydrated && onboardingOpen ? (
+        <div className="absolute inset-0 z-30 flex items-start justify-center overflow-y-auto bg-[#09090b]/85 px-3 py-5 backdrop-blur-sm sm:items-center sm:px-4 sm:py-10 md:py-14">
           <CreateOnboarding
             slides={slides}
             selectedTemplateId={selectedTemplateId}

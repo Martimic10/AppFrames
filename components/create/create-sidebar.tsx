@@ -11,7 +11,6 @@ import {
   ArrowRight,
   ImagePlus,
   ImageUp,
-  Layers,
   LayoutTemplate,
   Move,
   Palette,
@@ -40,11 +39,6 @@ import {
   resolveKitPortraitMockupPosition
 } from "@/components/create/mockup-position";
 import { getTemplatePickerKitVisual } from "@/components/create/template-kit-picker-variants";
-import {
-  GRAPHIC_SIZE_SLIDER,
-  graphicSizeScale,
-  resolveGraphicPosition
-} from "@/components/create/graphic-position";
 import type { FrameStyleSettings } from "@/components/create/frame-style-settings";
 import {
   getMoodStyles,
@@ -93,8 +87,6 @@ type CreateSidebarProps = {
   onRemoveStagedScreenshot: (id: string) => void;
   onClearStagedScreenshots: () => void;
   onReplaceScreenshot: (index: number, file: File) => void;
-  onSetSlideGraphic: (index: number, file: File) => void | Promise<void>;
-  onRemoveSlideGraphic: (index: number) => void;
   onRemoveScreenshot: (index: number) => void;
   onRemoveSlide: (index: number) => void;
   onAddSlide: () => void;
@@ -182,8 +174,6 @@ export function CreateSidebar({
   onRemoveStagedScreenshot,
   onClearStagedScreenshots,
   onReplaceScreenshot,
-  onSetSlideGraphic,
-  onRemoveSlideGraphic,
   onRemoveScreenshot,
   onRemoveSlide,
   onAddSlide,
@@ -217,7 +207,6 @@ export function CreateSidebar({
   const { isPro, openUpgrade } = usePro();
   const stageInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
-  const graphicInputRef = useRef<HTMLInputElement>(null);
   const [replaceTargetIndex, setReplaceTargetIndex] = useState<number | null>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadFeedback, setUploadFeedback] = useState<{
@@ -266,7 +255,6 @@ export function CreateSidebar({
     showUploadedMockupAsIs
   } = templateSettings;
   const { fontWeight, headlineColor, subheadlineColor } = textStyle;
-  const selectedGraphic = slides[selectedSlideIndex]?.graphicDataUrl ?? null;
   const selectedScreenshot = slides[selectedSlideIndex]?.imageDataUrl ?? null;
   const selectedTextBoxes = slides[selectedSlideIndex]?.textBoxes ?? [];
   const mockupRotatePresets = [-30, -15, 0, 15, 30, 90] as const;
@@ -287,20 +275,6 @@ export function CreateSidebar({
   );
   const currentMockupRotate = resolvedMockupPosition.rotate ?? 0;
   const showMockupControls = showDeviceFrame || Boolean(selectedScreenshot);
-  const resolvedGraphicPosition = resolveGraphicPosition(
-    textStyle.graphicPosition,
-    Boolean(selectedScreenshot)
-  );
-  const currentGraphicSize = textStyle.graphicPosition?.scale ?? 50;
-
-  const applyGraphicSize = (scale: number) => {
-    onSelectedSlideStyleChange({
-      graphicPosition: {
-        ...resolvedGraphicPosition,
-        scale
-      }
-    });
-  };
 
   const applyMockupRotate = (rotate: number) => {
     const base = textStyle.mockupPosition ?? {
@@ -409,17 +383,6 @@ export function CreateSidebar({
                 }}
               />
               <input
-                ref={graphicInputRef}
-                type="file"
-                accept="image/*,.svg,.webp,.png"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void onSetSlideGraphic(selectedSlideIndex, file);
-                  e.currentTarget.value = "";
-                }}
-              />
-              <input
                 ref={replaceInputRef}
                 type="file"
                 accept="image/*,.svg,.webp"
@@ -447,53 +410,9 @@ export function CreateSidebar({
                   </span>
                 </span>
                 <span className="text-center text-[10px] leading-relaxed text-zinc-500">
-                  PNG, JPG, WebP, or SVG. Queue screenshots for device mockups, or add graphics
-                  below for logos and illustrations.
+                  PNG, JPG, WebP, or SVG. Queue screenshots for device mockups on your slides.
                 </span>
               </button>
-
-              <div className="mb-3 rounded-xl border border-white/10 bg-zinc-900/45 p-2.5">
-                <div className="mb-2 flex items-center gap-2">
-                  <Layers className="h-3.5 w-3.5 text-purple-300/90" />
-                  <p className="text-[10px] font-medium text-zinc-300">
-                    Graphics — slide {selectedSlideIndex + 1}
-                  </p>
-                </div>
-                <p className="mb-2 text-[10px] leading-relaxed text-zinc-500">
-                  Logos, stickers, and illustrations layer on top of your mockup. Drag on the slide
-                  to reposition, or use the trash icon to remove.
-                </p>
-                {selectedGraphic ? (
-                  <div className="mb-2 flex items-center gap-2 rounded-lg border border-white/10 bg-black/30 p-1.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-zinc-950">
-                      <img
-                        src={selectedGraphic}
-                        alt=""
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium text-zinc-300">Graphic attached</p>
-                      <button
-                        type="button"
-                        onClick={() => onRemoveSlideGraphic(selectedSlideIndex)}
-                        className="mt-0.5 text-[10px] text-zinc-500 hover:text-zinc-300"
-                      >
-                        Remove graphic
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-                <button
-                  type="button"
-                  disabled={slideCount === 0}
-                  onClick={() => graphicInputRef.current?.click()}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-400/25 bg-purple-500/10 px-3 py-2 text-[10px] font-medium text-purple-100 transition hover:border-purple-400/40 hover:bg-purple-500/15 disabled:opacity-50"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  {selectedGraphic ? "Replace graphic" : "Add graphic"}
-                </button>
-              </div>
 
               {stageCount > 0 ? (
                 <div className="mb-3 rounded-xl border border-white/10 bg-zinc-900/50 p-2.5">
@@ -1071,44 +990,6 @@ export function CreateSidebar({
                         </button>
                       ) : null}
                     </div>
-                    {selectedGraphic ? (
-                      <div className="rounded-lg border border-white/8 bg-zinc-900/40 px-3 py-2.5">
-                        <div className="flex items-start gap-2">
-                          <Move className="mt-0.5 h-3.5 w-3.5 shrink-0 text-purple-300/80" aria-hidden />
-                          <p className="text-[10px] leading-relaxed text-zinc-500">
-                            Drag the graphic to reposition it. Use the purple corner handle or the
-                            size slider below to resize — up to 400%.
-                          </p>
-                        </div>
-                        <div className="mt-3">
-                          <div className="mb-1.5 flex items-center justify-between">
-                            <p className="text-[10px] font-medium text-zinc-500">Graphic size</p>
-                            <span className="text-[10px] tabular-nums text-zinc-400">
-                              {Math.round(graphicSizeScale(currentGraphicSize) * 100)}%
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={GRAPHIC_SIZE_SLIDER.min}
-                            max={GRAPHIC_SIZE_SLIDER.max}
-                            step={1}
-                            value={currentGraphicSize}
-                            onChange={(e) => applyGraphicSize(Number(e.target.value))}
-                            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-800 accent-purple-400"
-                          />
-                        </div>
-                        {textStyle.graphicPosition ? (
-                          <button
-                            type="button"
-                            onClick={() => onSelectedSlideStyleChange({ graphicPosition: null })}
-                            className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-zinc-400 transition hover:text-zinc-200"
-                          >
-                            <RotateCcw className="h-3 w-3" aria-hidden />
-                            Reset graphic position
-                          </button>
-                        ) : null}
-                      </div>
-                    ) : null}
                   </div>
                 </section>
               ) : null}

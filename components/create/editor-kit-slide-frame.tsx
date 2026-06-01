@@ -8,12 +8,10 @@ import {
   type EditorKitSlideAppearance
 } from "@/components/create/editor-kit-slide-appearance";
 import { EditorKitSlideExtras } from "@/components/create/editor-kit-slide-extras";
-import { EditorKitSlideGraphic } from "@/components/create/editor-kit-slide-graphic";
 import { EditorKitSlideText } from "@/components/create/editor-kit-slide-text";
 import { TemplateKitPortraitSlide } from "@/components/create/template-kit-portrait-slide";
 import { EditorKitSlideMockup } from "@/components/create/editor-kit-slide-mockup";
 import type { MockupPosition } from "@/components/create/mockup-position";
-import type { GraphicPosition } from "@/components/create/graphic-position";
 import type { TextPosition } from "@/components/create/text-position";
 import { getTemplateThemeColors } from "@/components/create/template-theme-colors";
 import type { TemplateSettings } from "@/components/create/template-settings";
@@ -38,8 +36,6 @@ type EditorKitSlideFrameProps = {
   onTextPositionChange: (position: TextPosition) => void;
   onTextSizeChange?: (textSize: number) => void;
   onMockupPositionChange: (position: MockupPosition) => void;
-  onGraphicPositionChange: (position: GraphicPosition) => void;
-  onGraphicRemove: () => void;
   onTextBoxPositionChange: (boxId: string, position: TextPosition) => void;
   onTextBoxTextSizeChange?: (boxId: string, textSize: number) => void;
   onTextBoxRemove?: (boxId: string) => void;
@@ -59,8 +55,6 @@ export function EditorKitSlideFrame({
   onTextPositionChange,
   onTextSizeChange,
   onMockupPositionChange,
-  onGraphicPositionChange,
-  onGraphicRemove,
   onTextBoxPositionChange,
   onTextBoxTextSizeChange,
   onTextBoxRemove
@@ -144,14 +138,6 @@ export function EditorKitSlideFrame({
           mockupSize={templateSettings.mockupSize}
           selected={selected}
           onMockupPositionChange={onMockupPositionChange}
-        />
-        <EditorKitSlideGraphic
-          imageDataUrl={slide.graphicDataUrl}
-          graphicPosition={slide.graphicPosition}
-          hasScreenshot={Boolean(slide.imageDataUrl)}
-          selected={selected}
-          onGraphicPositionChange={onGraphicPositionChange}
-          onGraphicRemove={onGraphicRemove}
         />
         <EditorKitSlideText
           appearance={appearance}

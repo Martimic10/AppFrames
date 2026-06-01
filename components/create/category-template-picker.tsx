@@ -59,7 +59,7 @@ function TemplatePreviewCard({
       onClick={() => (locked ? onLockedClick() : onSelect())}
       onMouseEnter={onHover}
       onFocus={onHover}
-      className={`group flex w-full max-w-[292px] flex-col overflow-hidden rounded-[24px] border text-left transition-all duration-300 ${
+      className={`group mx-auto flex w-full max-w-full flex-col overflow-hidden rounded-[20px] border text-left transition-all duration-300 sm:rounded-[24px] ${
         selected
           ? "border-white/30 shadow-[0_0_0_3px_color-mix(in_srgb,var(--tpl-card-accent)_55%,transparent),0_24px_48px_-16px_rgba(0,0,0,0.65)]"
           : "border-white/10 hover:border-white/22 hover:shadow-[0_20px_40px_-18px_rgba(0,0,0,0.55)]"
@@ -79,7 +79,7 @@ function TemplatePreviewCard({
         {tier === "pro" ? <ProBadge className="shrink-0" /> : null}
       </div>
 
-      <div className="bg-black/20 px-1 py-2">
+      <div className="category-template-picker-preview-wrap bg-black/20 px-0.5 py-1.5 sm:px-1 sm:py-2">
         <TemplatePickerScreenshotPreview
           categoryId={categoryId}
           templateId={templateId}
@@ -161,7 +161,7 @@ export function CategoryTemplatePicker({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="template-kit relative mx-auto flex w-full max-w-6xl flex-col rounded-3xl border border-white/10 bg-zinc-950/95 p-5 shadow-2xl shadow-black/60 backdrop-blur-xl sm:p-8"
+      className="category-template-picker template-kit relative mx-auto flex w-full max-w-6xl max-h-[min(calc(100dvh-1.5rem),56rem)] flex-col overflow-y-auto rounded-2xl border border-white/10 bg-zinc-950/95 p-4 shadow-2xl shadow-black/60 backdrop-blur-xl sm:rounded-3xl sm:p-6 lg:p-8"
     >
       <svg className="pointer-events-none absolute h-0 w-0" aria-hidden>
         <filter id="template-kit-noise">
@@ -199,13 +199,12 @@ export function CategoryTemplatePicker({
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 place-items-center gap-6 px-1 sm:mt-10 sm:grid-cols-3 sm:gap-8 sm:px-2">
+      <div className="category-template-picker-grid mt-5 grid grid-cols-1 place-items-stretch gap-4 px-0 sm:mt-6 sm:grid-cols-2 sm:gap-5 xl:mt-8 xl:grid-cols-3 xl:gap-6 xl:px-1">
         {category.templates.map((template, templateIndex) => {
           const templateSlides = getTemplateSlides(categoryId, template.id);
           const mergedSlides = templateSlides.map((slide, i) => ({
             ...slide,
-            imageDataUrl: slides[i]?.imageDataUrl ?? slide.imageDataUrl,
-            graphicDataUrl: slides[i]?.graphicDataUrl ?? slide.graphicDataUrl
+            imageDataUrl: slides[i]?.imageDataUrl ?? slide.imageDataUrl
           }));
 
           return (
