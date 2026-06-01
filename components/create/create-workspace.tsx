@@ -59,6 +59,10 @@ import {
 } from "@/components/create/image-upload";
 import type { TextPosition } from "@/components/create/text-position";
 import {
+  sanitizeGraphicPosition,
+  type GraphicPosition
+} from "@/components/create/graphic-position";
+import {
   sanitizeMockupPosition,
   type MockupPosition
 } from "@/components/create/mockup-position";
@@ -159,6 +163,8 @@ export function CreateWorkspace() {
           subheadlineColor: prevSlide?.subheadlineColor ?? slide.subheadlineColor,
           textPosition: prevSlide?.textPosition ?? slide.textPosition ?? null,
           mockupPosition: prevSlide?.mockupPosition ?? slide.mockupPosition ?? null,
+          graphicPosition: prevSlide?.graphicPosition ?? slide.graphicPosition ?? null,
+          graphicDataUrl: prevSlide?.graphicDataUrl ?? null,
           textBoxes: prevSlide?.textBoxes ?? []
         };
       });
@@ -380,6 +386,36 @@ export function CreateWorkspace() {
     []
   );
 
+  const handleSlideGraphicPositionChange = useCallback(
+    (index: number, position: GraphicPosition) => {
+      const sanitized = sanitizeGraphicPosition(position);
+      setSlides((prev) =>
+        prev.map((slide, i) =>
+          i === index ? { ...slide, graphicPosition: sanitized } : slide
+        )
+      );
+    },
+    []
+  );
+
+  const handleSetSlideGraphic = useCallback(async (index: number, file: File) => {
+    if (!isImageFile(file)) return;
+    const dataUrl = await readFileAsDataUrl(file);
+    setSlides((prev) =>
+      prev.map((slide, i) =>
+        i === index ? { ...slide, graphicDataUrl: dataUrl, graphicPosition: null } : slide
+      )
+    );
+  }, []);
+
+  const handleRemoveSlideGraphic = useCallback((index: number) => {
+    setSlides((prev) =>
+      prev.map((slide, i) =>
+        i === index ? { ...slide, graphicDataUrl: null, graphicPosition: null } : slide
+      )
+    );
+  }, []);
+
   const handleAddTextBox = useCallback((index: number) => {
     setSlides((prev) =>
       prev.map((slide, i) => {
@@ -456,7 +492,8 @@ export function CreateWorkspace() {
     subheadlineColor:
       selectedSlide?.subheadlineColor ?? DEFAULT_SLIDE_TEXT_STYLE.subheadlineColor,
     textPosition: selectedSlide?.textPosition ?? DEFAULT_SLIDE_TEXT_STYLE.textPosition,
-    mockupPosition: selectedSlide?.mockupPosition ?? DEFAULT_SLIDE_TEXT_STYLE.mockupPosition
+    mockupPosition: selectedSlide?.mockupPosition ?? DEFAULT_SLIDE_TEXT_STYLE.mockupPosition,
+    graphicPosition: selectedSlide?.graphicPosition ?? DEFAULT_SLIDE_TEXT_STYLE.graphicPosition
   };
 
   const handleStageScreenshots = useCallback(async (files: File[]): Promise<AutoFillResult> => {
@@ -748,6 +785,8 @@ export function CreateWorkspace() {
               onRemoveStagedScreenshot={handleRemoveStagedScreenshot}
               onClearStagedScreenshots={handleClearStagedScreenshots}
               onReplaceScreenshot={handleReplaceScreenshot}
+              onSetSlideGraphic={handleSetSlideGraphic}
+              onRemoveSlideGraphic={handleRemoveSlideGraphic}
               onRemoveScreenshot={handleRemoveScreenshot}
               onRemoveSlide={handleRemoveSlide}
               onAddSlide={handleAddSlide}
@@ -800,6 +839,8 @@ export function CreateWorkspace() {
               onSlideTextPositionChange={handleSlideTextPositionChange}
               onSlideTextSizeChange={handleSlideTextSizeChange}
               onSlideMockupPositionChange={handleSlideMockupPositionChange}
+              onSlideGraphicPositionChange={handleSlideGraphicPositionChange}
+              onSlideGraphicRemove={handleRemoveSlideGraphic}
               onTextBoxPositionChange={handleTextBoxPositionChange}
               onTextBoxTextSizeChange={handleTextBoxTextSizeChange}
               onTextBoxRemove={handleRemoveTextBox}

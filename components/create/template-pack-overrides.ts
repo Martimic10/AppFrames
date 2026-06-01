@@ -29,13 +29,13 @@ export const templatePackOverrides: Record<string, Partial<ThemePack>> = {
   ledger: {
     badge: "Private Wealth",
     backgroundImage:
-      "radial-gradient(110% 80% at 20% 15%, rgba(34,197,94,0.18), transparent 55%), radial-gradient(100% 75% at 85% 75%, rgba(16,185,129,0.22), transparent 58%), linear-gradient(170deg, #051912 0%, #080f0c 100%)",
+      "radial-gradient(120% 90% at 22% 12%, rgba(251,191,36,0.32), transparent 58%), radial-gradient(95% 70% at 88% 78%, rgba(245,158,11,0.16), transparent 55%), linear-gradient(170deg, #2a1808 0%, #0f0a06 100%)",
     chipPool: ["Net Worth", "Tax Optimized", "Yield 4.2%", "Risk Balanced", "Auto Invest", "Vault Secure"]
   },
   markets: {
     badge: "Markets Live",
     backgroundImage:
-      "radial-gradient(125% 100% at 65% 5%, rgba(52,211,153,0.26), transparent 55%), linear-gradient(180deg, #0a1f1a 0%, #060d0a 100%)",
+      "radial-gradient(125% 100% at 68% 6%, rgba(56,189,248,0.34), transparent 55%), radial-gradient(80% 60% at 8% 88%, rgba(59,130,246,0.14), transparent 52%), linear-gradient(180deg, #0c1929 0%, #060a12 100%)",
     statPool: ["Alpha Signal", "Options Flow", "Sector Heat", "Volatility Index"]
   },
   // AI
@@ -83,13 +83,13 @@ export const templatePackOverrides: Record<string, Partial<ThemePack>> = {
   "pulse-fit": {
     badge: "HIIT Pro",
     backgroundImage:
-      "radial-gradient(120% 90% at 85% 15%, rgba(163,230,53,0.34), transparent 60%), linear-gradient(180deg, #1a220e 0%, #0c1008 100%)",
+      "radial-gradient(120% 95% at 80% 10%, rgba(251,113,133,0.36), transparent 58%), radial-gradient(70% 55% at 12% 85%, rgba(244,63,94,0.18), transparent 52%), linear-gradient(180deg, #2a0a14 0%, #12080c 100%)",
     chipPool: ["Zone 4 Active", "PR Today", "Calories 420", "Recovery 82%", "Streak 12", "VO2 Max +"]
   },
   grind: {
     badge: "Iron Club",
     backgroundImage:
-      "radial-gradient(115% 85% at 20% 85%, rgba(132,204,22,0.18), transparent 55%), linear-gradient(170deg, #121808 0%, #080a06 100%)",
+      "radial-gradient(115% 90% at 75% 8%, rgba(245,158,11,0.3), transparent 58%), linear-gradient(170deg, #1a1206 0%, #0a0804 100%)",
     statPool: ["Lift Log", "Plate Math", "Split Plan", "Coach Notes"]
   },
   // Gaming
@@ -161,7 +161,7 @@ export const templatePackOverrides: Record<string, Partial<ThemePack>> = {
   voyage: {
     badge: "First Class",
     backgroundImage:
-      "radial-gradient(130% 95% at 50% 5%, rgba(125,211,252,0.28), transparent 62%), linear-gradient(180deg, #0a2030 0%, #060e18 100%)",
+      "radial-gradient(130% 95% at 55% 4%, rgba(252,211,77,0.3), transparent 62%), radial-gradient(85% 65% at 15% 90%, rgba(217,119,6,0.14), transparent 55%), linear-gradient(180deg, #1f1a0e 0%, #0c0a06 100%)",
     statPool: ["Concierge", "Lounge Access", "Private Transfer", "Miles Balance"]
   }
 };

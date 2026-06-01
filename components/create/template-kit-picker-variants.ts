@@ -51,7 +51,44 @@ function fontForVariation(
   return categoryFont;
 }
 
-function phoneRotateForVariation(variation: ThemeVariation, templateIndex: number): number {
+/** Distinct tilt per template so picker cards read as different layouts at a glance. */
+const phoneRotateByTemplate: Record<string, number> = {
+  minimal: 5,
+  focus: -1,
+  studio: -9,
+  fintech: -6,
+  ledger: 2,
+  markets: -4,
+  neural: -3,
+  glow: -8,
+  pulse: 3,
+  feed: 4,
+  stories: -7,
+  club: 1,
+  energy: -5,
+  "pulse-fit": 2,
+  grind: -3,
+  neon: -8,
+  arcade: 5,
+  cyber: -2,
+  arena: -4,
+  pro: 3,
+  classic: 6,
+  boutique: 4,
+  storefront: -6,
+  checkout: 1,
+  journey: -3,
+  wander: -7,
+  voyage: 5
+};
+
+function phoneRotateForTemplate(
+  templateId: string,
+  variation: ThemeVariation,
+  templateIndex: number
+): number {
+  const mapped = phoneRotateByTemplate[templateId];
+  if (mapped !== undefined) return mapped;
   const base =
     variation === "minimal" ? 4 : variation === "bold" ? -7 : variation === "data-rich" ? 1 : -3;
   return base + (templateIndex % 2 === 0 ? 2 : -2);
@@ -77,8 +114,9 @@ export function getTemplatePickerKitVisual(
     accentSoft: theme.accentSoft,
     backgroundImage: pack.backgroundImage,
     useCategoryBackground: variation === "minimal" && kit.theme === "light",
-    phoneRotate: phoneRotateForVariation(variation, templateIndex),
+    phoneRotate: phoneRotateForTemplate(templateId, variation, templateIndex),
     phoneBleed: variation === "bold" || variation === "cinematic",
+    badge: pack.badge,
     shimmerWord: kit.shimmerWord
   };
 }

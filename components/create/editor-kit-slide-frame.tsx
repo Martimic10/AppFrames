@@ -8,10 +8,12 @@ import {
   type EditorKitSlideAppearance
 } from "@/components/create/editor-kit-slide-appearance";
 import { EditorKitSlideExtras } from "@/components/create/editor-kit-slide-extras";
+import { EditorKitSlideGraphic } from "@/components/create/editor-kit-slide-graphic";
 import { EditorKitSlideText } from "@/components/create/editor-kit-slide-text";
 import { TemplateKitPortraitSlide } from "@/components/create/template-kit-portrait-slide";
 import { EditorKitSlideMockup } from "@/components/create/editor-kit-slide-mockup";
 import type { MockupPosition } from "@/components/create/mockup-position";
+import type { GraphicPosition } from "@/components/create/graphic-position";
 import type { TextPosition } from "@/components/create/text-position";
 import { getTemplateThemeColors } from "@/components/create/template-theme-colors";
 import type { TemplateSettings } from "@/components/create/template-settings";
@@ -36,6 +38,8 @@ type EditorKitSlideFrameProps = {
   onTextPositionChange: (position: TextPosition) => void;
   onTextSizeChange?: (textSize: number) => void;
   onMockupPositionChange: (position: MockupPosition) => void;
+  onGraphicPositionChange: (position: GraphicPosition) => void;
+  onGraphicRemove: () => void;
   onTextBoxPositionChange: (boxId: string, position: TextPosition) => void;
   onTextBoxTextSizeChange?: (boxId: string, textSize: number) => void;
   onTextBoxRemove?: (boxId: string) => void;
@@ -55,6 +59,8 @@ export function EditorKitSlideFrame({
   onTextPositionChange,
   onTextSizeChange,
   onMockupPositionChange,
+  onGraphicPositionChange,
+  onGraphicRemove,
   onTextBoxPositionChange,
   onTextBoxTextSizeChange,
   onTextBoxRemove
@@ -74,8 +80,9 @@ export function EditorKitSlideFrame({
   });
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       data-composition-card
       data-slide-index={slideIndex}
       data-selected={selected ? "true" : "false"}
@@ -83,7 +90,14 @@ export function EditorKitSlideFrame({
         e.stopPropagation();
         onSelect();
       }}
-      className={`editor-kit-slide-frame block shrink-0 overflow-hidden border p-0 text-left outline-none transition-shadow ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          onSelect();
+        }
+      }}
+      className={`editor-kit-slide-frame block shrink-0 cursor-pointer overflow-hidden border p-0 text-left outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-purple-400/50 ${
         selected ? "border-purple-400/50" : "border-white/[0.14] hover:border-white/25"
       }`}
       style={{
@@ -139,6 +153,14 @@ export function EditorKitSlideFrame({
           selected={selected}
           onMockupPositionChange={onMockupPositionChange}
         />
+        <EditorKitSlideGraphic
+          imageDataUrl={slide.graphicDataUrl}
+          graphicPosition={slide.graphicPosition}
+          hasScreenshot={Boolean(slide.imageDataUrl)}
+          selected={selected}
+          onGraphicPositionChange={onGraphicPositionChange}
+          onGraphicRemove={onGraphicRemove}
+        />
         <EditorKitSlideText
           appearance={appearance}
           slide={slide}
@@ -158,6 +180,6 @@ export function EditorKitSlideFrame({
           onTextBoxRemove={onTextBoxRemove}
         />
       </div>
-    </button>
+    </div>
   );
 }

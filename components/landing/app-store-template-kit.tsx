@@ -353,7 +353,30 @@ function PhoneScreen({
             </div>
           </>
         )}
-        {kind === "finance" && templateId !== "ledger" && templateId !== "markets" && (
+        {kind === "finance" && templateId === "fintech" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-teal-300/90`}>Cash flow</p>
+            <p className="text-2xl font-semibold tabular-nums text-teal-50">
+              <CountUp target={8420} prefix="$" />
+            </p>
+            <p className={`text-[11px] ${muted}`}>Saved this month</p>
+            <div className="mt-1 flex gap-1">
+              {["Spend", "Save", "Invest"].map((t, i) => (
+                <span
+                  key={t}
+                  className={`flex-1 rounded-md border py-1 text-center text-[9px] ${
+                    i === 2
+                      ? "border-teal-400/40 bg-teal-500/20 text-teal-100"
+                      : `border-white/10 ${muted}`
+                  }`}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
+        {kind === "finance" && templateId !== "ledger" && templateId !== "markets" && templateId !== "fintech" && (
           <>
             <p className={`text-[10px] uppercase tracking-wider ${muted}`}>Portfolio</p>
             <p className="text-2xl font-semibold tabular-nums">
@@ -363,7 +386,45 @@ function PhoneScreen({
             <div className={`mt-2 h-14 rounded-lg border ${panel}`} />
           </>
         )}
-        {kind === "ai" && (
+        {kind === "ai" && templateId === "glow" && (
+          <>
+            <p className={`text-[10px] font-semibold uppercase tracking-wider ${muted}`}>Copilot</p>
+            <div className="flex flex-wrap gap-1">
+              {["Draft email", "Analyze CSV", "Code review"].map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-cyan-400/30 bg-cyan-500/15 px-2 py-0.5 text-[9px] text-cyan-100"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className={`mt-1 rounded-xl border px-2.5 py-2 ${panel}`}>
+              <p className="text-[11px]">Generating response…</p>
+              <TypingDots />
+            </div>
+          </>
+        )}
+        {kind === "ai" && templateId === "pulse" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider ${muted}`}>Inference</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                ["Latency", "42ms"],
+                ["Tokens", "128k"],
+                ["Models", "12"],
+                ["Guard", "On"]
+              ].map(([k, v]) => (
+                <div key={k} className={`rounded-lg border px-2 py-1.5 ${panel}`}>
+                  <p className={`text-[9px] ${muted}`}>{k}</p>
+                  <p className="text-[11px] font-semibold tabular-nums text-violet-200">{v}</p>
+                </div>
+              ))}
+            </div>
+            <div className={`h-10 rounded-lg border ${panel}`} />
+          </>
+        )}
+        {kind === "ai" && templateId !== "glow" && templateId !== "pulse" && (
           <div className="space-y-2">
             <div className={`max-w-[85%] rounded-xl rounded-bl-sm border px-2.5 py-2 ${panel}`}>
               Summarize my launch deck
@@ -374,7 +435,40 @@ function PhoneScreen({
             <TypingDots />
           </div>
         )}
-        {kind === "social" && (
+        {kind === "social" && templateId === "stories" && (
+          <>
+            <p className={`text-[10px] font-semibold uppercase tracking-wider ${muted}`}>Stories</p>
+            <div className="flex gap-2 overflow-hidden pb-1">
+              {["You", "Mia", "Jay", "Zoe"].map((name, i) => (
+                <div key={name} className="flex shrink-0 flex-col items-center gap-1">
+                  <span
+                    className={`flex h-11 w-11 items-center justify-center rounded-full border-2 text-[9px] font-semibold ${
+                      i === 0
+                        ? "border-fuchsia-400 bg-gradient-to-br from-rose-500 to-fuchsia-500"
+                        : "border-rose-400/60 bg-white/10"
+                    }`}
+                  >
+                    {name[0]}
+                  </span>
+                  <span className={`text-[9px] ${muted}`}>{name}</span>
+                </div>
+              ))}
+            </div>
+            <div className={`h-14 rounded-xl border ${panel}`} />
+          </>
+        )}
+        {kind === "social" && templateId === "club" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-fuchsia-300/90`}>Members only</p>
+            {["Live room · 842", "Creator fund", "Event tonight"].map((t) => (
+              <div key={t} className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${panel}`}>
+                <span className="text-[11px]">{t}</span>
+                <span className="text-[10px] text-fuchsia-300">→</span>
+              </div>
+            ))}
+          </>
+        )}
+        {kind === "social" && templateId !== "stories" && templateId !== "club" && (
           <>
             {[1, 2].map((n) => (
               <div key={n} className={`rounded-xl border p-2.5 ${panel}`}>
@@ -387,16 +481,77 @@ function PhoneScreen({
             ))}
           </>
         )}
-        {kind === "fitness" && (
+        {kind === "fitness" && templateId === "pulse-fit" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-rose-300/90`}>HIIT · Round 3</p>
+            <p className="text-3xl font-bold tabular-nums text-rose-50">04:32</p>
+            <div className="flex gap-1.5">
+              {["Zone 4", "178 bpm", "420 cal"].map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-rose-400/35 bg-rose-500/15 px-2 py-0.5 text-[9px] text-rose-100"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full w-[68%] rounded-full bg-gradient-to-r from-rose-500 to-orange-400" />
+            </div>
+          </>
+        )}
+        {kind === "fitness" && templateId === "grind" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-amber-200/80`}>Leg day</p>
+            {[
+              ["Squat", "5 × 225"],
+              ["RDL", "4 × 185"],
+              ["Lunge", "3 × 40"]
+            ].map(([name, sets]) => (
+              <div key={name} className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${panel}`}>
+                <span className="font-medium">{name}</span>
+                <span className={`text-[10px] tabular-nums ${muted}`}>{sets}</span>
+              </div>
+            ))}
+          </>
+        )}
+        {kind === "fitness" && templateId !== "pulse-fit" && templateId !== "grind" && (
           <>
             <p className="text-3xl font-bold tabular-nums">8,420</p>
             <p className={`text-[11px] ${muted}`}>steps today</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-[72%] rounded-full bg-red-500" />
+              <div className="h-full w-[72%] rounded-full bg-lime-400" />
             </div>
           </>
         )}
-        {kind === "gaming" && (
+        {kind === "gaming" && templateId === "arcade" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-fuchsia-300`}>High score</p>
+            <p className="text-2xl font-bold tabular-nums text-fuchsia-100">1,284,900</p>
+            <div className={`space-y-1 rounded-lg border px-2 py-2 ${panel}`}>
+              {["You #1", "Nova #2", "Kai #3"].map((row) => (
+                <p key={row} className="text-[10px]">
+                  {row}
+                </p>
+              ))}
+            </div>
+          </>
+        )}
+        {kind === "gaming" && templateId === "cyber" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-cyan-300/90`}>Tactical HUD</p>
+            <div className="grid grid-cols-3 gap-1 text-center text-[9px]">
+              {["HP", "ARM", "NRG"].map((l) => (
+                <div key={l} className={`rounded border border-cyan-500/25 py-1 ${panel}`}>
+                  <p className={muted}>{l}</p>
+                  <p className="font-bold text-cyan-200">88</p>
+                </div>
+              ))}
+            </div>
+            <div className={`h-12 rounded border border-cyan-400/20 bg-cyan-500/10 ${panel}`} />
+          </>
+        )}
+        {kind === "gaming" && templateId !== "arcade" && templateId !== "cyber" && (
           <>
             <p className="text-[10px] uppercase tracking-wider text-violet-300">Level 42</p>
             <p className="text-xl font-bold">Raid Boss</p>
@@ -406,20 +561,107 @@ function PhoneScreen({
             <p className={`text-[11px] ${muted}`}>XP 12,400 / 14,000</p>
           </>
         )}
-        {kind === "sports" && (
+        {kind === "sports" && templateId === "pro" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider ${muted}`}>Live stats</p>
+            <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+              {[
+                ["xG", "2.4"],
+                ["Poss", "62%"],
+                ["Shots", "14"],
+                ["Pass", "89%"]
+              ].map(([k, v]) => (
+                <div key={k} className={`rounded-lg border px-2 py-1.5 ${panel}`}>
+                  <span className={muted}>{k}</span>
+                  <span className="float-right font-semibold tabular-nums">{v}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {kind === "sports" && templateId === "classic" && (
+          <>
+            <p className={`text-center text-[10px] uppercase tracking-[0.2em] ${muted}`}>Final</p>
+            <p className="text-center font-[family-name:var(--font-playfair)] text-3xl font-semibold tabular-nums">
+              24 – 21
+            </p>
+            <p className={`text-center text-[10px] ${muted}`}>OT · Box score</p>
+            <div className={`mx-auto mt-1 h-px w-16 bg-white/20`} />
+          </>
+        )}
+        {kind === "sports" && templateId !== "pro" && templateId !== "classic" && (
           <>
             <p className="text-center text-4xl font-bold tabular-nums">24 – 21</p>
             <p className={`text-center text-[11px] ${muted}`}>Q4 · 2:14 left</p>
           </>
         )}
-        {kind === "ecommerce" && (
+        {kind === "ecommerce" && templateId === "storefront" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider ${muted}`}>New arrivals</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {["Mug", "Lamp", "Rug", "Vase"].map((t) => (
+                <div key={t} className={`rounded-lg border p-1.5 ${panel}`}>
+                  <div className={`mb-1 h-8 rounded ${light ? "bg-amber-100" : "bg-white/12"}`} />
+                  <p className="text-[10px] font-medium">{t}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {kind === "ecommerce" && templateId === "checkout" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider ${muted}`}>Your cart</p>
+            {[
+              ["Ceramic Mug", "$24"],
+              ["Linen Set", "$89"]
+            ].map(([name, price]) => (
+              <div key={name} className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${panel}`}>
+                <span className="text-[11px]">{name}</span>
+                <span className="text-[11px] font-semibold tabular-nums">{price}</span>
+              </div>
+            ))}
+            <div className="rounded-lg bg-amber-500/90 px-2.5 py-2 text-center text-[11px] font-semibold text-zinc-900">
+              Checkout · $113
+            </div>
+          </>
+        )}
+        {kind === "ecommerce" && templateId !== "storefront" && templateId !== "checkout" && (
           <div className={`rounded-xl border p-2 ${panel}`}>
             <div className={`mb-2 h-20 rounded-lg ${light ? "bg-amber-100" : "bg-white/12"}`} />
             <p className="font-semibold">Ceramic Mug</p>
             <p className={`text-[11px] ${muted}`}>$24.00</p>
           </div>
         )}
-        {kind === "travel" && (
+        {kind === "travel" && templateId === "wander" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider ${muted}`}>Explore</p>
+            <div className={`relative h-20 rounded-xl ${light ? "bg-sky-100" : "bg-sky-500/15"}`}>
+              {[
+                ["12%", "28%"],
+                ["62%", "45%"],
+                ["78%", "72%"]
+              ].map(([left, top], i) => (
+                <span
+                  key={i}
+                  className="absolute h-2.5 w-2.5 rounded-full border-2 border-cyan-300 bg-cyan-400/80"
+                  style={{ left, top }}
+                />
+              ))}
+            </div>
+            <p className="text-[11px] font-medium">12 hidden gems near you</p>
+          </>
+        )}
+        {kind === "travel" && templateId === "voyage" && (
+          <>
+            <p className={`text-[10px] uppercase tracking-wider text-amber-200/80`}>First class</p>
+            <p className="text-lg font-semibold text-amber-50">Maldives</p>
+            <p className={`text-[11px] ${muted}`}>Suite · private transfer</p>
+            <div className={`mt-1 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-2 text-[10px] text-amber-100/90`}>
+              Concierge confirmed · Lounge access
+            </div>
+          </>
+        )}
+        {kind === "travel" && templateId !== "wander" && templateId !== "voyage" && (
           <>
             <p className="text-lg font-semibold">Kyoto</p>
             <p className={`text-[11px] ${muted}`}>Apr 12 – Apr 19</p>

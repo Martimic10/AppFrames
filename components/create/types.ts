@@ -25,6 +25,8 @@ export type ScreenshotSlide = {
   headline: string;
   subheadline: string;
   imageDataUrl: string | null;
+  /** Decorative graphic (logo, illustration, sticker) layered on the slide. */
+  graphicDataUrl: string | null;
   /** Additional draggable text boxes on this slide. */
   textBoxes: SlideTextBox[];
   fontId: TextFontId;

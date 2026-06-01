@@ -1,5 +1,6 @@
 import type { TextPosition } from "@/components/create/text-position";
 import type { MockupPosition } from "@/components/create/mockup-position";
+import type { GraphicPosition } from "@/components/create/graphic-position";
 
 export type { TextPosition } from "@/components/create/text-position";
 export type { MockupPosition } from "@/components/create/mockup-position";
@@ -18,6 +19,8 @@ export type SlideTextStyle = {
   textPosition: TextPosition | null;
   /** Custom screenshot mockup position (% of slide, center-anchored). */
   mockupPosition: MockupPosition | null;
+  /** Custom graphic overlay position (% of slide, center-anchored). */
+  graphicPosition: GraphicPosition | null;
 };
 
 export const DEFAULT_SLIDE_TEXT_STYLE: SlideTextStyle = {
@@ -27,7 +30,8 @@ export const DEFAULT_SLIDE_TEXT_STYLE: SlideTextStyle = {
   headlineColor: null,
   subheadlineColor: null,
   textPosition: null,
-  mockupPosition: null
+  mockupPosition: null,
+  graphicPosition: null
 };
 
 export const TEXT_COLOR_PRESETS = [

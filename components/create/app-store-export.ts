@@ -119,7 +119,9 @@ async function pinExportImageHost(
   const frameH = frame.offsetHeight;
   const leftPct = Number.parseFloat(node.style.left || "50");
   const topPct = Number.parseFloat(node.style.top || "50");
-  const rotateDeg = Number.parseFloat(node.dataset.mockupRotate ?? "0");
+  const rotateDeg = Number.parseFloat(
+    node.dataset.graphicRotate ?? node.dataset.mockupRotate ?? "0"
+  );
   const scaleMulRaw = Number.parseFloat(
     node.dataset.graphicScaleMul ?? node.dataset.mockupScaleMul ?? "1"
   );

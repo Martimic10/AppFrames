@@ -1368,3 +1368,28 @@
 .template-kit-canvas-phone .template-kit-phone-screen-inner [class*="text-[11px]"] {
   font-size: 7px !important;
 }
+
+/* Uploaded graphics — no filter on moving layers (prevents slide bg smear). */
+.editor-kit-slide-frame .composition-frame.is-mockup-interacting [data-export-graphic-host] {
+  will-change: transform;
+}
+
+.editor-kit-slide-frame [data-export-graphic-host] {
+  contain: none;
+  filter: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.editor-kit-slide-frame .editor-kit-graphic-tilt {
+  transform-origin: center center;
+  isolation: isolate;
+  overflow: visible;
+  background: transparent !important;
+}
+
+.editor-kit-slide-frame [data-export-graphic-host] img {
+  filter: none !important;
+  box-shadow: none !important;
+}

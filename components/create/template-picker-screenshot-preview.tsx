@@ -27,6 +27,7 @@ export function TemplatePickerScreenshotPreview({
         headline={previewSlide.headline}
         subheadline={previewSlide.subheadline}
         screenshotUrl={previewSlide.imageDataUrl}
+        showBadge
       />
     </div>
   );

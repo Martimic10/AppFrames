@@ -8,6 +8,7 @@ function slides(pairs: [string, string][]): ScreenshotSlide[] {
     headline,
     subheadline,
     imageDataUrl: null,
+    graphicDataUrl: null,
     textBoxes: [],
     fontId: DEFAULT_TEXT_FONT_ID,
     ...DEFAULT_SLIDE_TEXT_STYLE

@@ -50,16 +50,16 @@ const templateColorById: Record<string, TemplateColorDef> = {
     gradient: { from: "#0f3d32", via: "#071018", to: "#05080f", angle: 165 }
   },
   ledger: {
-    accent: "#34d399",
-    accentSoft: "rgba(52, 211, 153, 0.2)",
-    background: "#080f0c",
-    gradient: { from: "#0a2e22", via: "#051912", to: "#080f0c", angle: 170 }
+    accent: "#fbbf24",
+    accentSoft: "rgba(251, 191, 36, 0.22)",
+    background: "#0f0a06",
+    gradient: { from: "#78350f", via: "#1c1408", to: "#0f0a06", angle: 170 }
   },
   markets: {
-    accent: "#6ee7b7",
-    accentSoft: "rgba(110, 231, 183, 0.18)",
-    background: "#060d0a",
-    gradient: { from: "#134e4a", via: "#0a1f1a", to: "#060d0a", angle: 180 }
+    accent: "#38bdf8",
+    accentSoft: "rgba(56, 189, 248, 0.22)",
+    background: "#060a12",
+    gradient: { from: "#1e3a8a", via: "#0c1929", to: "#060a12", angle: 180 }
   },
   // AI
   neural: {
@@ -107,16 +107,16 @@ const templateColorById: Record<string, TemplateColorDef> = {
     gradient: { from: "#3f6212", via: "#141a0e", to: "#0a0d08", angle: 175 }
   },
   "pulse-fit": {
-    accent: "#84cc16",
-    accentSoft: "rgba(132, 204, 22, 0.22)",
-    background: "#0c1008",
-    gradient: { from: "#4d7c0f", via: "#1a220e", to: "#0c1008", angle: 180 }
+    accent: "#fb7185",
+    accentSoft: "rgba(251, 113, 133, 0.24)",
+    background: "#12080c",
+    gradient: { from: "#9f1239", via: "#2a0a14", to: "#12080c", angle: 180 }
   },
   grind: {
-    accent: "#eab308",
-    accentSoft: "rgba(234, 179, 8, 0.2)",
-    background: "#080a06",
-    gradient: { from: "#713f12", via: "#121808", to: "#080a06", angle: 170 }
+    accent: "#f59e0b",
+    accentSoft: "rgba(245, 158, 11, 0.24)",
+    background: "#0a0804",
+    gradient: { from: "#92400e", via: "#1a1206", to: "#0a0804", angle: 170 }
   },
   // Gaming
   neon: {
@@ -127,9 +127,9 @@ const templateColorById: Record<string, TemplateColorDef> = {
   },
   arcade: {
     accent: "#f472b6",
-    accentSoft: "rgba(244, 114, 182, 0.22)",
-    background: "#0a0612",
-    gradient: { from: "#9d174d", via: "#1a0f2a", to: "#0a0612", angle: 175 }
+    accentSoft: "rgba(244, 114, 182, 0.28)",
+    background: "#140818",
+    gradient: { from: "#db2777", via: "#3b0764", to: "#140818", angle: 175 }
   },
   cyber: {
     accent: "#22d3ee",
@@ -151,10 +151,10 @@ const templateColorById: Record<string, TemplateColorDef> = {
     gradient: { from: "#1d4ed8", via: "#0c1828", to: "#070c14", angle: 175 }
   },
   classic: {
-    accent: "#94a3b8",
-    accentSoft: "rgba(148, 163, 184, 0.2)",
-    background: "#0a0e14",
-    gradient: { from: "#334155", via: "#101820", to: "#0a0e14", angle: 170 }
+    accent: "#d4d4d8",
+    accentSoft: "rgba(212, 212, 216, 0.2)",
+    background: "#111110",
+    gradient: { from: "#3f3f46", via: "#1c1c1a", to: "#111110", angle: 170 }
   },
   // Ecommerce
   boutique: {
@@ -189,10 +189,10 @@ const templateColorById: Record<string, TemplateColorDef> = {
     gradient: { from: "#0e7490", via: "#0a2430", to: "#061018", angle: 175 }
   },
   voyage: {
-    accent: "#7dd3fc",
-    accentSoft: "rgba(125, 211, 252, 0.2)",
-    background: "#060e18",
-    gradient: { from: "#0284c7", via: "#0a2030", to: "#060e18", angle: 180 }
+    accent: "#fcd34d",
+    accentSoft: "rgba(252, 211, 77, 0.22)",
+    background: "#0c0a06",
+    gradient: { from: "#a16207", via: "#1f1a0e", to: "#0c0a06", angle: 180 }
   }
 };
 
